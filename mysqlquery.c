@@ -29,6 +29,46 @@ int main()
 
 		/* 选择数据库testdb */
 		status = mysql_select_db(mysql, "testdb");
+		if (status == 0) {
+			printf("选择数据库成功!\n");
+			status = mysql_query(mysql, selectsql);
+			if (status == 0){
+				res = mysql_store_result(mysql);
+				field_count = mysql_field_count(mysql);
+				printf("字段个数: %u \n", field_count);
+				/*
+				printf("%s\n", row[0]);
+				printf("%s\n", row[1]);
+				printf("%s\n", row[2]);
+				*/
+				row_count = res->row_count;
+				printf("记录行数: %d \n", row_count);
+				/* 输出所有行 */
+				while (row = mysql_fetch_row(res)){
+					for (i=0; i<field_count; i++){
+						printf("%s\n", row[i]);
+					}	
+
+				}
+				mysql_free_result(res);
+
+			} else {
+					printf("%s\n", mysql_error(conn));	
+			}
+
+		}else{
+			printf("%s\n", mysql_error(conn));
+		}
 		
+	} else {
+		printf("数据库连接失败!\n");
 	}
+
+	/* 关闭数据库连接 */
+	mysql_close(conn);
+	
+	free(mysql);
+
+
+	return 0;
 }
