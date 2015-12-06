@@ -169,7 +169,7 @@ int main()
 	db_name = "testdb";
 
 	/* Initialize the table name */
-	sql_create_table = "create table test_table (id int not null, username char(20), password char(16)";	
+	sql_create_table = "create table test_table (id int not null, username char(20), password char(16)) ";
 
 
 	
