@@ -1,7 +1,7 @@
 /**
  * mysql connect test!
  * compiler:
- * gcc -o mysqlcreatetable mysqlcreatetable.c $(mysql_config --libs)
+ * gcc -o mysqlconn mysqlconn.c $(mysql_config --libs)
  */
 
 #include <stdio.h>
@@ -15,28 +15,11 @@ int main()
 	/* Initialize the MYSQL structure */
 	mysql_init(mysql);
 	MYSQL *conn;
-    char *createtablesql = "create table testtable (id int not null, username char(20), password char(16))";
-	int status;
 								/* host machine   username password     database     port    socket file    flags  */
 	conn = mysql_real_connect(mysql, "localhost", "root", "",          NULL,         0,        NULL,         0);
 
-	if (conn != NULL) {
-
+	if (conn != NULL)
 		printf("Connect Database successfully.\n");
-										/* select database testdb */	
-		status = mysql_select_db(mysql, "testdb");
-		
-		if (status == 0) {
-			printf("select database successfully.\n");
-			status = mysql_query(mysql, createtablesql);
-			if (status == 0)
-				printf("create the table successfully\n");
-			else
-				printf("%s\n", mysql_error(conn));
-		} else {
-			printf("%s\n", mysql_error(conn));
-		}
-	}
 	else
 		printf("Connect Datatbase failed\n");
 	
