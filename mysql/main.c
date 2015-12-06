@@ -86,9 +86,11 @@ int my_create_table(MYSQL *mysql, char *sql_query)
 		printf("Create table success\n");
 	} else {
 		printf("Create table failed\n");
+	}
+	
 	return status;
-}
 
+}
 
 int my_insert_record(MYSQL *mysql, char *sql_add_record) 
 {
