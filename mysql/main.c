@@ -9,7 +9,7 @@
 #include <string.h>
 
 #define MAX_SQL_LEN 100
-#define MAX_RECORD 10
+#define MAX_RECORD 7
 
 
 
@@ -203,6 +203,7 @@ int main()
 
 	free(conn_db);
 	free(mysql);
+
 	return 0;
 
 }
