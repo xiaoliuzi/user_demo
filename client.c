@@ -39,9 +39,8 @@ int main(int argc, char *argv[])
 
 	write(s_fd, str, strlen(str)+1);
 
-
-	str = password;
-	write(s_fd, str, strlen(str)+1);
+	printf("send paasword\n");
+	write(s_fd, password, strlen(str)+1);
 	
 	read(s_fd, buf, MAX_LINE);
 	printf("receive from server: %s\n", buf);
