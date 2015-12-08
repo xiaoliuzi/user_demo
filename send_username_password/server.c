@@ -85,8 +85,7 @@ int main(void)
 		"insert into test_table(id, username, password) values(7, 'Adrian','123456') "
 
 	};
-	char sql_select_table[MAX_LINE] = "select password from test_table where username =";
-	char *single_quotes = "'";
+	char *sql_select_table = "select * from test_table where username =";
 	MYSQL_RES *res = NULL;
 	MYSQL_ROW row = 0;
 	unsigned int field_count;
@@ -139,48 +138,19 @@ int main(void)
 	printf("waiting ...\n");
 	while(1) {
 		c_fd = accept(l_fd, (struct sockaddr*)&cin, &len);
-
-
-		n=read(c_fd, username, MAX_LINE);
+		n=read(c_fd, buf, MAX_LINE);
 
 		inet_ntop(AF_INET, &cin.sin_addr, addr_p, sizeof(addr_p));
 
 		printf("client IP is %s, port is %d\n", addr_p, ntohs(sin.sin_port));
- 		printf("username is :%s\n", username );	
+ 		printf("username is :%s\n",buf );	
 		
-		n = read(c_fd, password, MAX_LINE);			
-		printf("password is :%s\n", password);
-       
-
-		
-		// combine the sql query
-		strcat(sql_select_table, single_quotes);
-		strcat(sql_select_table, username);
-		strcat(sql_select_table, single_quotes);
-		// Query the database 
-	 	status = my_query(mysql, sql_select_table);
-
-		res = mysql_store_result(mysql);
-		field_count = mysql_field_count(mysql);
-		printf("Number of column :%u\n", field_count);
-		
-		row_count = res->row_count;
-		printf("Number of row :%d\n", row_count);
-		row = mysql_fetch_row(res);
-		printf("%s's password: %s\n", username, row[0]);
-	
-		
-		status = strcmp(row[0],password);
+		n = read(c_fd, buf, MAX_LINE);			
+		printf("password is :%s\n", buf);
+        
 
 		my_fun(buf);
-		n = 20;
-		//buf = "\nlog in success\n";
-        if (status == 0) {
-			write(c_fd,"log OK" , n);
- 		}
-		else {
-			write(c_fd, "log failed", n);
-		}
+		write(c_fd, buf, n);
 		close(c_fd);
 	} 
 
@@ -188,14 +158,5 @@ int main(void)
 		perror("fail to close");
 		exit(1);
 	}
-
-
-
-	mysql_free_result(res);
-	mysql_close(conn);
-
-	freee(conn_db);
-	free(mysql);
-	
 	return 0;
 } 

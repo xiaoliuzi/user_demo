@@ -43,9 +43,7 @@ int main(int argc, char *argv[])
 	write(s_fd, password, strlen(str)+1);
 	
 	read(s_fd, buf, MAX_LINE);
-	printf("receive from server:\n%s\n", buf);
-
-	for (n=0; n< 10000; n++);
+	printf("receive from server: %s\n", buf);
 	close (s_fd);
 	return 0;
 
