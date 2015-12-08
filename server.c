@@ -13,11 +13,16 @@
  *  在第一个终端（运行server的那个终端）显示为：
  *                      client IP is 127.0.0.1, port is 8000
  *                      content is : ChinA
+ *
+ *  How to compile:
+ *    $gcc -o server server.c my_operation_sql.c $(mysql_config --libs)
+ *
  */
 
 
-#include "my_operation_sql.h"
 #include "my_network.h"
+#include "my_operation_sql.h"
+#include <mysql/mysql.h>
 
 
 void my_fun(char *p)
@@ -109,7 +114,7 @@ int main(void)
 
 
 	
-	conn = my_conn_db(conn_db);
+	conn = my_conn_db(*conn_db);
 	status = my_create_db(mysql, db_name);
 	status = my_select_db(mysql, db_name);
 	status = my_create_table(mysql, sql_create_table);
@@ -119,20 +124,6 @@ int main(void)
 
 
 /////////////////////////////////////////////////////////////////////////////////////
-
-
-	status = my_query(mysql, sql_select_table);
-	res = mysql_store_result(mysql);	
-	field_count = mysql_field_count(mysql);
-	printf("Number of column : %u \n", field_count);
-	
-	row_count = res->row_count;
-	printf("Number of row : %d \n", row_count);	
-	while(row = mysql_fetch_row(res)) {
-			for (i=0; i<field_count; i++) {
-				printf("%s\n", row[i]);
-			}
-	}	
 
 
 
@@ -149,10 +140,10 @@ int main(void)
 		c_fd = accept(l_fd, (struct sockaddr*)&cin, &len);
 		n=read(c_fd, buf, MAX_LINE);
 
-
 		inet_ntop(AF_INET, &cin.sin_addr, addr_p, sizeof(addr_p));
+
 		printf("client IP is %s, port is %d\n", addr_p, ntohs(sin.sin_port));
- 		printf("content is :%s\n",buf );	
+ 		printf("username is :%s\n",buf );	
 		
 		n = read(c_fd, buf, MAX_LINE);			
 		printf("password is :%s\n", buf);

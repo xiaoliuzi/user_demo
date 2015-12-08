@@ -2,6 +2,8 @@
  * Write my own mysql function to operate the database.
  */
 #ifndef _MY_OPERATION_SQL_H
+
+
 #define _MY_OPERATION_SQL_H
 
 
@@ -28,3 +30,4 @@ struct CONN{
 };
 
 #endif
+

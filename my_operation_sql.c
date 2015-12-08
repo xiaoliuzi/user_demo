@@ -1,12 +1,13 @@
-#include <mysql/mysql.h>
+#include <stdio.h>
+#include "my_operation_sql.h"
+//#include <mysql/mysql.h>
 
 
-
-MYSQL * my_conn_db(struct CONN *conn_db)
+MYSQL * my_conn_db(struct CONN conn_db)
 {
 	MYSQL *conn = NULL;
 	
-	conn = mysql_real_connect(conn_db->mysql, conn_db->host, conn_db->user, conn_db->password, conn_db->db, conn_db->port, conn_db->socket_file, conn_db->flags);
+	conn = mysql_real_connect(conn_db.mysql, conn_db.host, conn_db.user, conn_db.password, conn_db.db, conn_db.port, conn_db.socket_file, conn_db.flags);
 	if (conn != NULL) {
 		printf("Connect Database success\n");
 	}
