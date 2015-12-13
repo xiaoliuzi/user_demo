@@ -26,6 +26,11 @@
 #include <mysql/mysql.h>
 #define EINTR 9999
 
+struct mail{
+	int type;
+	int len;
+	char *content;
+};
 
 
 //page 73
