@@ -16,12 +16,81 @@
  *  How to compile:
  *    $gcc -o server server.c my_operation_sql.c $(mysql_config --libs)
  *
+ * 本程序在通信过程中，为了保证read(接收)函数,提前知道需要读取几个字节，采用先判断字符串长度，
+ * 然后事先提前将字符串长度发送过去
  */
 
 
 #include "my_network.h"
 #include "my_operation_sql.h"
 #include <mysql/mysql.h>
+#define EINTR 9999
+
+
+
+//page 73
+ssize_t                       /* Write "n" bytes to a descriptor. */
+writen(int fd, const void *vptr, size_t n)
+{
+	size_t nleft;
+	ssize_t nwritten;
+	const char *ptr;
+	int errno=0;
+
+
+	ptr = vptr;
+	nleft = n;
+	while( nleft > 0) {
+		if ( (nwritten = write(fd, ptr, nleft)) <= 0) {
+			if (nwritten < 0 && errno == EINTR)
+				nwritten = 0;   /*adn call write() again */
+			else
+				return (-1);    /* error */
+		}	
+		
+		nleft -= nwritten;
+		ptr += nwritten;
+	}
+
+    return (n);
+}
+
+
+
+
+
+
+
+
+// page 72
+ssize_t      /* Read "n" bytes from a descriptor. */
+readn( int fd, void *vptr, size_t n)
+{
+	size_t nleft;
+	ssize_t nread;
+	char *ptr;
+	int errno=0;
+	
+	ptr = vptr;
+	nleft = n;
+	while (nleft > 0) {
+		if ( (nread = read(fd, ptr, nleft)) < 0) {
+			if ( errno == EINTR)
+				nread = 0;     /* and call read() again */
+			else
+				return (-1);
+
+		} else if (nread == 0)
+			break;            /* EOF */
+		
+		nleft -= nread;
+		ptr += nread;
+	}
+
+	return (n - nleft);      /* return >= 0 */
+}
+
+
 
 
 void my_fun(char *p)
@@ -65,6 +134,8 @@ int main(void)
 	int port = 8000;
 	int n;
 	int pid;
+	int send_len;
+	int recv_len;
 
 	MYSQL *mysql = (MYSQL*)malloc(sizeof(MYSQL));
 	MYSQL *conn = NULL;
@@ -126,7 +197,6 @@ int main(void)
 /////////////////////////////////////////////////////////////////////////////////////
 
 
-
 	bzero(&sin, sizeof(sin));
 	sin.sin_family = AF_INET;
 	sin.sin_addr.s_addr = INADDR_ANY;
@@ -142,12 +212,12 @@ int main(void)
 
 		if ( (pid = fork())==0 ) {
 			close(l_fd);    /* child closes listening socket */
-			n=read(c_fd, username, 5);//////////////////////
+			n=readn(c_fd, username, 5);//////////////////////
 			inet_ntop(AF_INET, &cin.sin_addr, addr_p, sizeof(addr_p));
 			printf("client IP is %s, port is %d\n", addr_p, ntohs(sin.sin_port));
 	 		printf("username is :%s\n", username );	
 			printf("before receive password n=%d\n",n);
-			n=read(c_fd, password, 6);			
+			n=readn(c_fd, password, 6);			
 			printf("after receive password n=%d\n",n);
 			printf("received password is :%stestingtesting\n", password);
 		
@@ -178,11 +248,11 @@ int main(void)
 			n = 20;
 			//buf = "\nlog in success\n";
 			if (status == 0) {
-				write(c_fd,"log OK" , n);
+				writen(c_fd,"log OK" , n);
  			}
 			else {
 				printf("status = %d\n", status);
-				write(c_fd, "log failed", n);
+				writen(c_fd, "log failed", n);
 			}
 			close(c_fd);  /* done with this client */
 		    exit(0);     /* child terminates */	 
