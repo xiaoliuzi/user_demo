@@ -26,10 +26,10 @@
 #include <mysql/mysql.h>
 #define EINTR 9999
 
-struct mail{
+struct buf{
 	int type;
 	int len;
-	char *content;
+	char data[0];
 };
 
 
@@ -212,17 +212,37 @@ int main(void)
 	bind(l_fd, (struct sockaddr*)&sin, sizeof(sin));
 	listen(l_fd, 10);
 	printf("waiting ...\n");
-	while(1) {
+	int len_content;
+	for( ; ; ) {
 		c_fd = accept(l_fd, (struct sockaddr*)&cin, &len);
 
 		if ( (pid = fork())==0 ) {
 			close(l_fd);    /* child closes listening socket */
-			n=readn(c_fd, username, 5);//////////////////////
+
+
+			///n=readn(c_fd, username, 5);//////////////////////
+			/* 读取内容长度 */
+			n = readn(c_fd, &len_content, sizeof(len_content));
+			printf("lenth n = %d\n", n);
+			fputs(&len_content, stdout);
+			/* 读取内容 */
+			n = readn(c_fd, username, len_content);
+			printf("username n = %d\n", n);
+			fputs(username, stdout);
+
+
 			inet_ntop(AF_INET, &cin.sin_addr, addr_p, sizeof(addr_p));
 			printf("client IP is %s, port is %d\n", addr_p, ntohs(sin.sin_port));
 	 		printf("username is :%s\n", username );	
+
+
+
 			printf("before receive password n=%d\n",n);
-			n=readn(c_fd, password, 6);			
+//			n=readn(c_fd, password, 6);			
+			readn(c_fd, &len_content, sizeof(len_content));
+			n = readn(c_fd, username, ntohl(len_content));
+			
+
 			printf("after receive password n=%d\n",n);
 			printf("received password is :%stestingtesting\n", password);
 		

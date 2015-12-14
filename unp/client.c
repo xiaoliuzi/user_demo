@@ -6,6 +6,7 @@
 #include <string.h>
 
 #define EINTR 9999
+#define MAX_MAIL_LEN 1000
 
 /* define the mail struct to contain the mailtype mail_length and mail_content */
 struct buf{
@@ -101,12 +102,27 @@ int main(int argc, char *argv[])
 
 
 	printf("Input username:\n");
-	scanf("%s", username);
+	fgets(username, MAX_LINE, stdin);
+	username[strlen(username)-1] = '\0';
+	fputs(username, stdout);
+
+	/* 除了字符串等单字节以外，传递所有参数的整数 都需要进行字节序转换，同时接收方也需进行相应的逆转换 */
+	int data_len = strlen(username);
+	printf("you have intput username's lenght is:%d\n", data_len);
 	
 	printf("Input password:\n");
-	scanf("%s", password);
+	fgets(password, MAX_MAIL_LEN, stdin);
+	password[strlen(password)-1] = '\0';
+	fputs(password, stdout);
+	/* 除了字符串等单字节以外，传递所有参数的整数 都需要进行字节序转换，同时接收方也需进行相应的逆转换 */
+//	 data_len = htonl(strlen(password));
+//	fputs(&data_len, stdout);
+	/* 发送内容长度 */
+//    write(s_fd, &data_len, sizeof(data_len));
+	/* 发送内容 */
+//	write(s_fd, password, strlen(password));
 	
-	str = username;	
+//	str = username;	
 		
 	bzero(&sin, sizeof(sin));
 	sin.sin_family = AF_INET;
@@ -116,28 +132,36 @@ int main(int argc, char *argv[])
 	s_fd = socket(AF_INET, SOCK_STREAM, 0);
 	connect(s_fd, (struct sockaddr *)&sin, sizeof(sin));
 
+
+	
+	/* 发送内容长度 */
+   	n =  writen(s_fd, &data_len, sizeof(data_len));
+	printf("write len of n is: %d\n", n);	
+	/* 发送内容 */
+	n = writen(s_fd, username, strlen(username)+1);
+	printf("write username of n is: %d\n", n);	
+
 	// send the length of the string.
-	//write(s_fd, username,len)
 	// send the content
-	writen(s_fd, str, strlen(str)+1);
+//	writen(s_fd, username, strlen(username)+1);
 
 	printf("before send paasword\n");
-	writen(s_fd, password, strlen(password)+2);
+	writen(s_fd, password, strlen(password)+1);
 	printf("after send paasword\n");
 
 	/* send mail like this:mail xlz abc */
-	struct buf that = init_buf(1,100);
+	struct buf *that = init_buf(1,MAX_MAIL_LEN);
 	printf("input send content:\n");
-	scanf("%s", that->data);
+//////	fgets(that->data, MAX_MAIL_LEN, stdin);
+//////	that->data[strlen(that->data)-1] = '\0';
 	/* 除了字符串等单字节以外，传递所有参数的整数 都需要进行字节序转换，同时接收方也需进行相应的逆转换 */
-	int data_len = htonl(strlen(that->data));
-
-
-    write(s_fd, &data_len, sizeof(data_len));
-	
+/////	data_len = htonl(strlen(that->data));
+/////    write(s_fd, &data_len, sizeof(data_len));
+	/*发送邮件内容*/
+////	write(s_fd, that->data, strlen(that->data));
 	
 		
-	readn(s_fd, buf, MAX_LINE);
+//	readn(s_fd, buf, MAX_LINE);
 	printf("receive from server:\n%s\n", buf);
 
 	for (n=0; n< 10000; n++);
