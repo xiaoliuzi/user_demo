@@ -202,8 +202,8 @@ int main(void)
 	for( ; ; ) {
 		c_fd = accept(l_fd, (struct sockaddr*)&cin, &len);
 
-//		if ( (pid = fork())==0 ) {
-		{
+		if ( (pid = fork())==0 ) {
+			
 			close(l_fd);    /* child closes listening socket */
 
 			/* 读取username长度 */
