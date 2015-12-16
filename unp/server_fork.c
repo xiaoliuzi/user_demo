@@ -23,14 +23,10 @@
 
 #include "my_network.h"
 #include "my_operation_sql.h"
+#include "my_mail.h"
 #include <mysql/mysql.h>
 #define EINTR 9999
 
-struct buf{
-	int type;
-	int len;
-	char data[0];
-};
 
 //page 73
 ssize_t                       /* Write "n" bytes to a descriptor. */
@@ -249,10 +245,23 @@ int main(void)
 			strcat(tmp, "\0");
 
 			status = strcmp(tmp,password);
+		
+			struct buf *that = init_buf(1, MAX_MAIL_LEN);
+			/* 读取mail长度 */	
+			n = readn(c_fd, &len_content, sizeof(len_content));
+			/* 读取mail内容 */
+			n = readn(c_fd, that->data, len_content);
+			printf("content is :");
+			fputs(that->data, stdout);
+			printf("\n");
 
+		
+
+	
 			my_fun(buf);
 			n = 20;
 			//buf = "\nlog in success\n";
+			printf("password identify status:%d\n", status);
 			if (status == 0) {
 				writen(c_fd,"log OK" , n);
  			}
