@@ -74,7 +74,7 @@ writen(int fd, const void *vptr, size_t n)
 
     return (n);
 }
-
+/*  某大神推荐的定义方法，可以根据长度动态改变长度 */
 struct buf* init_buf(int op, int len){
 	struct buf* that = (struct buf*)malloc(sizeof(struct buf) + sizeof(char)*len);
 	that->op = op;

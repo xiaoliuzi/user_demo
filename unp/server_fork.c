@@ -25,10 +25,20 @@
 #include "my_operation_sql.h"
 #include "my_mail.h"
 #include <mysql/mysql.h>
+#include <stdlib.h>
 #define EINTR 9999
+struct mail_body{
+	char type[MAX_MAIL_LEN];
+	char name[MAX_MAIL_LEN];
+	char content[MAX_MAIL_LEN];
+
+};
 
 
-//page 73
+/* 定义一个枚举类型来标识邮件类型 */ 
+enum mail_type{GET_MAIL, MAIL};
+
+// unp page 73
 ssize_t                       /* Write "n" bytes to a descriptor. */
 writen(int fd, const void *vptr, size_t n)
 {
@@ -57,12 +67,7 @@ writen(int fd, const void *vptr, size_t n)
 
 
 
-
-
-
-
-
-// page 72
+//unp page 72
 ssize_t      /* Read "n" bytes from a descriptor. */
 readn( int fd, void *vptr, size_t n)
 {
@@ -105,6 +110,38 @@ void my_fun(char *p)
 		}
 	}
 }
+/* 分离mail体，并将mail类型，用户名，邮件内容别存入相应的邮件体成员变量中 */
+/* 可以在客户端发送之前，来将各个消息中的分隔符（比如这里maildata中的空格
+ * 更换为'\0'.
+ *
+ */
+struct mail_body* mail_separate(char *mail_data)
+{
+	//struct buf *that = init_buf(1, MAX_MAIL_LEN);
+	int maildata_i;/* maildata 的专用索引*/
+	int j; /* 分解消息的公共索引*/
+	struct mail_body *mailbody=(struct mail_body*)malloc(sizeof(struct mail_body));
+
+	for (maildata_i=0, j=0; mail_data[maildata_i] != ' '; ++maildata_i, ++j) {
+		mailbody->type[j] = mail_data[maildata_i];
+	}
+	mailbody->type[j] = '\0';
+	printf("mail type :%s\n", mailbody->type);
+	for (maildata_i += 1, j=0; mail_data[maildata_i] != ' '; ++maildata_i, ++j) {
+		mailbody->name[j] = mail_data[maildata_i];
+	}
+	mailbody->name[j] = '\0';
+	printf("username :%s\n", mailbody->name);
+	for (maildata_i += 1, j=0; mail_data[maildata_i] != '\0'; ++maildata_i, ++j) {
+		mailbody->content[j] = mail_data[maildata_i];
+	}
+	mailbody->content[j] = '\0';
+	printf("mail content :%s\n", mailbody->content);
+	
+	return mailbody;
+}
+
+
 
 
 
@@ -133,24 +170,37 @@ int main(void)
 	int status;
     char *db_name = NULL;
 	char *table_name = NULL;
-	char *sql_create_table = NULL;
+	char *sql_uname_table = NULL;
+	char *sql_mail_table = NULL;
 	char *sql_insert_record[MAX_RECORD] = {
-		"insert into test_table(id, username, password) values(1, 'Jenny','123456') ",
-		"insert into test_table(id, username, password) values(2, 'Andrew','123456') ",
-		"insert into test_table(id, username, password) values(3, 'Gravin','123456') ",
-		"insert into test_table(id, username, password) values(4, 'Duncan','123456') ",
-		"insert into test_table(id, username, password) values(5, 'Emma','12345') ",
-		"insert into test_table(id, username, password) values(6, 'Alex','12345') ",
-		"insert into test_table(id, username, password) values(7, 'Adrian','123456') "
+		"insert into user_table(id, username, password) values(1, 'Jenny','123456') ",
+		"insert into user_table(id, username, password) values(2, 'Andrew','123456') ",
+		"insert into user_table(id, username, password) values(3, 'Gravin','123456') ",
+		"insert into user_table(id, username, password) values(4, 'Duncan','123456') ",
+		"insert into user_table(id, username, password) values(5, 'Emma','12345') ",
+		"insert into user_table(id, username, password) values(6, 'Alex','12345') ",
+		"insert into user_table(id, username, password) values(7, 'Adrian','123456') "
 
 	};
-	char sql_select_table[MAX_LINE] = "select password from test_table where username =";
+    /* mail_id is auto increment */
+	char *sql_insert_mail = "insert into mail_table ( mailtype, receiver, content) values( ";
+	enum mail_type mt;
+	char sql_select_table[MAX_LINE] = "select password from user_table where username =";
+	char sql_query_test[MAX_LINE] = "select * from mail_table;";
 	char *single_quotes = "'";
+	char *comma = ",";
+	char *r_parenthese = ")";
 	MYSQL_RES *res = NULL;
 	MYSQL_ROW row = 0;
 	unsigned int field_count;
 	unsigned long long row_count;
 	int i;
+	char *mail_type_ptr[] = {"getmail", "mail"};
+	char str_tmp[MAX_LINE];
+	int tmp;
+
+
+
 
 
 	/* Initialize the MYSQL structure */
@@ -170,17 +220,21 @@ int main(void)
 	db_name = "testdb";
 
 	/* Initialize the table name */
-	sql_create_table = "create table test_table (id int not null, username char(20), password char(16)) ";
-
+	sql_uname_table = "create table user_table (id int not null, username char(20), password char(16)) ";
+//	sql_mail_table = "create table mail_table (mail_id int not null, sender char(20), receiver char(20), content char(MAX_MAIL_LEN),												type int,  status int, time char(100) ) ";
+/*mailtype int not null*/
+	sql_mail_table = "create table mail_table ( mail_id int not null primary key auto_increment,mailtype char(50),receiver char(20), content char(MAX_MAIL_LEN) ) ";
 
 	
 	conn = my_conn_db(*conn_db);
 	status = my_create_db(mysql, db_name);
 	status = my_select_db(mysql, db_name);
-	status = my_create_table(mysql, sql_create_table);
+	status = my_create_table(mysql, sql_uname_table);
 	for (i=0; i<MAX_RECORD; i++) {
 		status = my_insert_record(mysql, sql_insert_record[i]);
 	}
+
+//	status = my_create_table(mysql, sql_mail_table);
 
 /////////////////////////////////////////////////////////////////////////////////////
 
@@ -243,9 +297,11 @@ int main(void)
 			char tmp[100]={"0"};
 			strcpy(tmp, row[0]	);
 			strcat(tmp, "\0");
-
 			status = strcmp(tmp,password);
-		
+
+
+	
+			/* 接收客户端发来的邮件长度和内容*/	
 			struct buf *that = init_buf(1, MAX_MAIL_LEN);
 			/* 读取mail长度 */	
 			n = readn(c_fd, &len_content, sizeof(len_content));
@@ -255,10 +311,9 @@ int main(void)
 			fputs(that->data, stdout);
 			printf("\n");
 
-		
 
-	
-			my_fun(buf);
+
+
 			n = 20;
 			//buf = "\nlog in success\n";
 			printf("password identify status:%d\n", status);
@@ -269,6 +324,54 @@ int main(void)
 				printf("status = %d\n", status);
 				writen(c_fd, "log failed", n);
 			}
+
+		   	/* 解析邮件内容 */ 
+			struct mail_body *mb = mail_separate(that->data);
+			
+#if 0
+			/*如果邮件体第一个命令是mail*/
+			if (strcmp(mb->type, "mail") == 0) {
+				mt = GET_MAIL;
+				
+			} else if (strcmp(mb->type, "getmail") == 0)/*如果邮件体第一个命令是getmail*/
+			{
+				mt = MAIL;
+			}
+			
+			itoa(mt, str_tmp,10);	
+#endif 	
+			// combine the sql query
+			strcat(sql_insert_mail, mb->type);
+			strcat(sql_insert_mail, comma);
+			strcat(sql_insert_mail, mb->name);
+			strcat(sql_insert_mail, comma);
+			strcat(sql_insert_mail, mb->content);
+			strcat(sql_insert_mail, r_parenthese);
+
+			status = my_create_table(mysql, sql_mail_table);
+		//	status = my_create_table(mysql, sql_mail_table);
+			status = my_insert_record(mysql, sql_insert_mail);
+
+			// Query the database 
+		 	status = my_query(mysql, sql_query_test);
+
+			res = mysql_store_result(mysql);
+			field_count = mysql_field_count(mysql);
+			printf("Number of column :%u\n", field_count);
+		
+			row_count = res->row_count;
+			printf("Number of row :%d\n", row_count);
+			row = mysql_fetch_row(res);
+			printf("From db content: %s\n",  row[0]);
+			
+
+
+	
+			my_fun(buf);
+			
+
+
+
 			close(c_fd);  /* done with this client */
 		    exit(0);     /* child terminates */	 
 			} 

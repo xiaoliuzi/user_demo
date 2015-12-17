@@ -1,0 +1,1 @@
+gcc -g server_fork.c my_operation_sql.c $(mysql_config --libs) -o server
