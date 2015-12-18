@@ -2,7 +2,7 @@
 struct buf{
 	int op;
 	int len;
-	char *data;
+	char data[0];
 };
 
 
