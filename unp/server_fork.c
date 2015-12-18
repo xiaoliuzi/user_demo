@@ -182,11 +182,12 @@ int main(void)
 		"insert into user_table(id, username, password) values(7, 'Adrian','123456') "
 
 	};
-    /* mail_id is auto increment */
-	char *sql_insert_mail = "insert into mail_table ( mailtype, receiver, content) values( ";
+    /* mailid is auto increment */
+//	char *sql_insert_mail = "insert into mail_table ( mailtype, receiver, content) values( ";
+	char *sql_insert_mail = "insert into mail_table (mailid, mailtype, receiver, content) values(2,'mail', 'xlz', 'abcdefg'); ";
 	enum mail_type mt;
 	char sql_select_table[MAX_LINE] = "select password from user_table where username =";
-	char sql_query_test[MAX_LINE] = "select * from mail_table;";
+	char *sql_query_test = "select * from mail_table";
 	char *single_quotes = "'";
 	char *comma = ",";
 	char *r_parenthese = ")";
@@ -221,9 +222,9 @@ int main(void)
 
 	/* Initialize the table name */
 	sql_uname_table = "create table user_table (id int not null, username char(20), password char(16)) ";
-//	sql_mail_table = "create table mail_table (mail_id int not null, sender char(20), receiver char(20), content char(MAX_MAIL_LEN),												type int,  status int, time char(100) ) ";
+//	sql_mail_table = "create table mail_table (mailid int not null, sender char(20), receiver char(20), content char(MAX_MAIL_LEN),												type int,  status int, time char(100) ) ";
 /*mailtype int not null*/
-	sql_mail_table = "create table mail_table ( mail_id int not null primary key auto_increment,mailtype char(50),receiver char(20), content char(MAX_MAIL_LEN) ) ";
+	sql_mail_table = "create table mail_table ( mailid int not null primary key auto_increment, mailtype char(50), receiver char(20), content char(100) ) ";
 
 	
 	conn = my_conn_db(*conn_db);
@@ -340,6 +341,13 @@ int main(void)
 			
 			itoa(mt, str_tmp,10);	
 #endif 	
+
+
+
+		//	status = my_create_table(mysql, sql_mail_table);
+			status = my_select_db(mysql, db_name);
+			status = my_create_table(mysql, sql_mail_table);
+		/*	
 			// combine the sql query
 			strcat(sql_insert_mail, mb->type);
 			strcat(sql_insert_mail, comma);
@@ -347,14 +355,28 @@ int main(void)
 			strcat(sql_insert_mail, comma);
 			strcat(sql_insert_mail, mb->content);
 			strcat(sql_insert_mail, r_parenthese);
-
-			status = my_create_table(mysql, sql_mail_table);
-		//	status = my_create_table(mysql, sql_mail_table);
+*/
 			status = my_insert_record(mysql, sql_insert_mail);
-
+			
+			printf("before select\n");
 			// Query the database 
-		 	status = my_query(mysql, sql_query_test);
+		 	status = my_query(mysql, sql_select_table);
+		 	/////status = my_query(mysql, sql_query_test);
+			printf("after select\n");
+	
 
+			if(status == 0) {
+				res = mysql_store_result(mysql);
+				field_count = mysql_field_count(mysql);
+				printf("number of field: %u \n", field_count);
+				row_count = res->row_count;
+				printf("number of record: %d \n", row_count);
+			} else {
+				printf("query select error\n");
+			}
+			
+#if 0
+	
 			res = mysql_store_result(mysql);
 			field_count = mysql_field_count(mysql);
 			printf("Number of column :%u\n", field_count);
@@ -364,7 +386,7 @@ int main(void)
 			row = mysql_fetch_row(res);
 			printf("From db content: %s\n",  row[0]);
 			
-
+#endif
 
 	
 			my_fun(buf);
