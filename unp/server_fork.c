@@ -293,6 +293,7 @@ int main(void)
 			printf("Number of row :%d\n", row_count);
 			row = mysql_fetch_row(res);
 			printf("From db %s's password: %s\n", username, row[0]);
+			mysql_free_result(res);
 
 			/* process the end of \0 , as the field from db doesn't have \0 */
 			char tmp[100]={"0"};
@@ -360,8 +361,8 @@ int main(void)
 			
 			printf("before select\n");
 			// Query the database 
-		 	status = my_query(mysql, sql_select_table);
-		 	/////status = my_query(mysql, sql_query_test);
+		 	//status = my_query(mysql, sql_select_table);
+		 	status = my_query(mysql, sql_query_test);
 			printf("after select\n");
 	
 
@@ -375,18 +376,23 @@ int main(void)
 				printf("query select error\n");
 			}
 			
-#if 0
 	
-			res = mysql_store_result(mysql);
+		//	res = mysql_store_result(mysql);
 			field_count = mysql_field_count(mysql);
 			printf("Number of column :%u\n", field_count);
-		
+			
+			printf("before get res->row_count\n");	
+			if (res == NULL)
+				printf("res if null\n");
 			row_count = res->row_count;
+			printf("after get res->row_count\n");	
 			printf("Number of row :%d\n", row_count);
 			row = mysql_fetch_row(res);
 			printf("From db content: %s\n",  row[0]);
+			printf("From db content: %s\n",  row[1]);
+			printf("From db content: %s\n",  row[2]);
+			printf("From db content: %s\n",  row[3]);
 			
-#endif
 
 	
 			my_fun(buf);
