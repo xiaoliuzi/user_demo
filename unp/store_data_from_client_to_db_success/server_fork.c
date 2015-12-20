@@ -127,6 +127,9 @@ struct mail_body* mail_separate(char *mail_data)
 	}
 	mailbody->type[j] = '\0';
 	printf("mail type :%s\n", mailbody->type);
+
+
+
 	for (maildata_i += 1, j=0; mail_data[maildata_i] != ' '; ++maildata_i, ++j) {
 		mailbody->name[j] = mail_data[maildata_i];
 	}
@@ -183,8 +186,8 @@ int main(void)
 
 	};
     /* mailid is auto increment */
-//	char *sql_insert_mail = "insert into mail_table ( mailtype, receiver, content) values( ";
-	char *sql_insert_mail = "insert into mail_table (mailid, mailtype, receiver, content) values(2,'mail', 'xlz', 'abcdefg'); ";
+	char sql_insert_mail[MAX_LINE] = "insert into mail_table ( mailtype, receiver, content) values( ";
+//	char *sql_insert_mail = "insert into mail_table (mailid, mailtype, receiver, content) values(2,'mail', 'xlz', 'abcdefg'); ";
 	enum mail_type mt;
 	char sql_select_table[MAX_LINE] = "select password from user_table where username =";
 	char *sql_query_test = "select * from mail_table";
@@ -344,19 +347,31 @@ int main(void)
 #endif 	
 
 
-
-		//	status = my_create_table(mysql, sql_mail_table);
+			printf("before select\n");
 			status = my_select_db(mysql, db_name);
+			printf("before create mail table\n");
 			status = my_create_table(mysql, sql_mail_table);
-		/*	
+			
 			// combine the sql query
+			printf("mb->content=%s\n", mb->type);
+			printf("mb->content=%s\n", mb->name);
+			printf("mb->content=%s\n", mb->content);
+			//strcat(sql_insert_mail, comma);
+			strcat(sql_insert_mail, single_quotes);
 			strcat(sql_insert_mail, mb->type);
+			strcat(sql_insert_mail, single_quotes);
 			strcat(sql_insert_mail, comma);
+			strcat(sql_insert_mail, single_quotes);
 			strcat(sql_insert_mail, mb->name);
+			strcat(sql_insert_mail, single_quotes);
 			strcat(sql_insert_mail, comma);
+			strcat(sql_insert_mail, single_quotes);
 			strcat(sql_insert_mail, mb->content);
+			strcat(sql_insert_mail, single_quotes);
 			strcat(sql_insert_mail, r_parenthese);
-*/
+			printf("sql_insert = %s\n", sql_insert_mail);	
+			
+			printf("before insert\n");
 			status = my_insert_record(mysql, sql_insert_mail);
 			
 			printf("before select\n");
