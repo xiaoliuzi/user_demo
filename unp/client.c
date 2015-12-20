@@ -90,7 +90,7 @@ struct buf* init_buf(int op, int len){
 int main(int argc, char *argv[])
 {
 	struct sockaddr_in sin;
-	char buf[MAX_LINE];
+	char recv_buf[MAX_LINE];
 	int s_fd;
 	int port=8000;
 	char *str = NULL;
@@ -138,6 +138,7 @@ int main(int argc, char *argv[])
 
 	/* send mail like this:mail xlz abc */
 	struct buf *that = init_buf(1,MAX_MAIL_LEN);
+	printf("input your mail like this:mail username mailcontent\n");
 	fgets(that->data, MAX_MAIL_LEN, stdin);
 	that->data[strlen(that->data)-1] = '\0';
 	fputs(that->data, stdout);
@@ -145,6 +146,7 @@ int main(int argc, char *argv[])
 	
 	/* 除了字符串等单字节以外，传递所有参数的整数 都需要进行字节序转换，同时接收方也需进行相应的逆转换 */
 	//data_len = htonl(strlen(that->data));
+	
 	data_len = strlen(that->data)+1;
     n = writen(s_fd, &data_len, sizeof(data_len));
 	printf("write content len status:%d\n", n);
@@ -152,8 +154,8 @@ int main(int argc, char *argv[])
 	printf("write conetent status:%d\n", n);
 	
 		
-	readn(s_fd, buf, MAX_LINE);
-	printf("receive from server:%s\n", buf);
+	readn(s_fd, recv_buf, MAX_LINE);
+	printf("receive from server:%s\n", recv_buf);
 
 //	for (n=0; n< 10000; n++);
 	close (s_fd);
