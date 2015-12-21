@@ -322,7 +322,8 @@ int main(void)
 			//buf = "\nlog in success\n";
 			printf("password identify status:%d\n", status);
 			if (status == 0) {
-				writen(c_fd,"log OK" , n);
+				//writen(c_fd,"log OK" , n);
+				printf("client log ok\n");
  			}
 			else {
 				printf("status = %d\n", status);
@@ -373,12 +374,13 @@ int main(void)
 #endif
 					printf("send mail is :%s\n", row[0]);
 					status = writen(c_fd, row[0], 100);//strlen(row[0])+1);
+					writen(c_fd,"test" , n);
 					printf("write mail status = %d\n", status);
 					printf("send mail success\n");
 				// release the res.	
 					mysql_free_result(res);
 					//////////////////////////////'
-					for(;;);
+					//for(;;);
 				
 			}else if (mt == MAIL){
 
