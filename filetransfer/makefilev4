@@ -1,8 +1,0 @@
-OURCE=$(wildcard *.c)  
-PROGS=$(patsubst %.c,%,$(SOURCE))  
-all:$(PROGS)  
-  
-clean:  
-        rm $(PROGS)  
-distclean:  
-        rm *~ $(PROGS)  
