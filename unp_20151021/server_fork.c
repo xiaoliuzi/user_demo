@@ -191,7 +191,7 @@ int main(void)
 	enum mail_type mt;
 	char sql_select_table[MAX_LINE] = "select password from user_table where username =";
 	
-	char sql_query_content[MAX_LINE] = "select content from mail_table where receiver = ";
+	char sql_query_content[MAX_LINE] = "select content from mail_tablewhere username = ";
 	char *sql_query_test = "select * from mail_table";
 	char *single_quotes = "'";
 	char *comma = ",";
@@ -346,39 +346,8 @@ int main(void)
 //#endif 	
 			if(mt == GET_MAIL) {
 				printf("client send get mail command\n");
-						
-					// combine the sql query
-					strcat(sql_query_content, single_quotes);
-					strcat(sql_query_content, username);
-					strcat(sql_query_content, single_quotes);
-					// Query the database 
-					printf("sql_query_content=%s\n", sql_query_content);
-					status = my_query(mysql, sql_query_content);
 
-					res = mysql_store_result(mysql);
-					field_count = mysql_field_count(mysql);
-					printf("Number of column :%u\n", field_count);
 				
-					row_count = res->row_count;
-					printf("Number of row :%d\n", row_count);
-					row = mysql_fetch_row(res);
-					printf("From db %s's content: %s\n", username, row[0]);/////是否需要将username改成receiver
-
-					/* process the end of \0 , as the field from db doesn't have \0 */
-#if 0			
-					char tmp[100]={"0"};
-					strcpy(tmp, row[0]	);
-					strcat(tmp, "\0");
-					status = strcmp(tmp,mb->content);
-#endif
-					printf("send mail is :%s\n", row[0]);
-					status = writen(c_fd, row[0], 100);//strlen(row[0])+1);
-					printf("write mail status = %d\n", status);
-					printf("send mail success\n");
-				// release the res.	
-					mysql_free_result(res);
-					//////////////////////////////'
-					for(;;);
 				
 			}else if (mt == MAIL){
 
@@ -445,7 +414,7 @@ int main(void)
 					
 		}
 	
-		//	my_fun(buf);
+			my_fun(buf);
 			
 
 

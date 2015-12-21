@@ -91,7 +91,6 @@ int main(int argc, char *argv[])
 {
 	struct sockaddr_in sin;
 	char recv_buf[MAX_LINE];
-	char recv_mail[MAX_LINE]="0";
 	int s_fd;
 	int port=8000;
 	char *str = NULL;
@@ -136,9 +135,6 @@ int main(int argc, char *argv[])
 	printf("write password len status:%d\n", n);
 	n = writen(s_fd, password, strlen(password)+1);
 	printf("write password status:%d\n", n);
-	
-//	readn(s_fd, recv_buf, MAX_LINE);
-//	printf("receive log from server:%s\n", recv_buf);
 
 	/* send mail like this:mail xlz abc */
 	struct buf *that = init_buf(1,MAX_MAIL_LEN);
@@ -158,14 +154,8 @@ int main(int argc, char *argv[])
 	printf("write conetent status:%d\n", n);
 	
 		
-	//readn(s_fd, recv_buf, MAX_LINE);
-	printf("receive log from server:%s\n", recv_buf);
-	
-	readn(s_fd, recv_mail, MAX_LINE);
-	printf("receive mail from server:%c\n", recv_mail[0]);
-	printf("receive mail from server:%c\n", recv_mail[1]);
-	printf("receive mail from server:%c\n", recv_mail[2]);
-	printf("receive mail from server:%c\n", recv_mail[3]);
+	readn(s_fd, recv_buf, MAX_LINE);
+	printf("receive from server:%s\n", recv_buf);
 
 //	for (n=0; n< 10000; n++);
 	close (s_fd);

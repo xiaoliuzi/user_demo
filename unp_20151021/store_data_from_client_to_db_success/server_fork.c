@@ -190,8 +190,6 @@ int main(void)
 //	char *sql_insert_mail = "insert into mail_table (mailid, mailtype, receiver, content) values(2,'mail', 'xlz', 'abcdefg'); ";
 	enum mail_type mt;
 	char sql_select_table[MAX_LINE] = "select password from user_table where username =";
-	
-	char sql_query_content[MAX_LINE] = "select content from mail_table where receiver = ";
 	char *sql_query_test = "select * from mail_table";
 	char *single_quotes = "'";
 	char *comma = ",";
@@ -204,6 +202,9 @@ int main(void)
 	char *mail_type_ptr[] = {"getmail", "mail"};
 	char str_tmp[MAX_LINE];
 	int tmp;
+
+
+
 
 
 	/* Initialize the MYSQL structure */
@@ -332,120 +333,84 @@ int main(void)
 		   	/* 解析邮件内容 */ 
 			struct mail_body *mb = mail_separate(that->data);
 			
-//#if 0
+#if 0
 			/*如果邮件体第一个命令是mail*/
 			if (strcmp(mb->type, "mail") == 0) {
-				mt = MAIL;
+				mt = GET_MAIL;
 				
 			} else if (strcmp(mb->type, "getmail") == 0)/*如果邮件体第一个命令是getmail*/
 			{
-				mt = GET_MAIL;
+				mt = MAIL;
 			}
 			
-		///	itoa(mt, str_tmp,10);	
-//#endif 	
-			if(mt == GET_MAIL) {
-				printf("client send get mail command\n");
-						
-					// combine the sql query
-					strcat(sql_query_content, single_quotes);
-					strcat(sql_query_content, username);
-					strcat(sql_query_content, single_quotes);
-					// Query the database 
-					printf("sql_query_content=%s\n", sql_query_content);
-					status = my_query(mysql, sql_query_content);
+			itoa(mt, str_tmp,10);	
+#endif 	
 
-					res = mysql_store_result(mysql);
-					field_count = mysql_field_count(mysql);
-					printf("Number of column :%u\n", field_count);
-				
-					row_count = res->row_count;
-					printf("Number of row :%d\n", row_count);
-					row = mysql_fetch_row(res);
-					printf("From db %s's content: %s\n", username, row[0]);/////是否需要将username改成receiver
 
-					/* process the end of \0 , as the field from db doesn't have \0 */
-#if 0			
-					char tmp[100]={"0"};
-					strcpy(tmp, row[0]	);
-					strcat(tmp, "\0");
-					status = strcmp(tmp,mb->content);
-#endif
-					printf("send mail is :%s\n", row[0]);
-					status = writen(c_fd, row[0], 100);//strlen(row[0])+1);
-					printf("write mail status = %d\n", status);
-					printf("send mail success\n");
-				// release the res.	
-					mysql_free_result(res);
-					//////////////////////////////'
-					for(;;);
-				
-			}else if (mt == MAIL){
-
-					printf("before select\n");
-					status = my_select_db(mysql, db_name);
-					printf("before create mail table\n");
-					status = my_create_table(mysql, sql_mail_table);
-					
-					// combine the sql query
-					printf("mb->content=%s\n", mb->type);
-					printf("mb->content=%s\n", mb->name);
-					printf("mb->content=%s\n", mb->content);
-					//strcat(sql_insert_mail, comma);
-					strcat(sql_insert_mail, single_quotes);
-					strcat(sql_insert_mail, mb->type);
-					strcat(sql_insert_mail, single_quotes);
-					strcat(sql_insert_mail, comma);
-					strcat(sql_insert_mail, single_quotes);
-					strcat(sql_insert_mail, mb->name);
-					strcat(sql_insert_mail, single_quotes);
-					strcat(sql_insert_mail, comma);
-					strcat(sql_insert_mail, single_quotes);
-					strcat(sql_insert_mail, mb->content);
-					strcat(sql_insert_mail, single_quotes);
-					strcat(sql_insert_mail, r_parenthese);
-					printf("sql_insert = %s\n", sql_insert_mail);	
-					
-					printf("before insert\n");
-					status = my_insert_record(mysql, sql_insert_mail);
-					
-					printf("before select\n");
-					// Query the database 
-					//status = my_query(mysql, sql_select_table);
-					status = my_query(mysql, sql_query_test);
-					printf("after select\n");
+			printf("before select\n");
+			status = my_select_db(mysql, db_name);
+			printf("before create mail table\n");
+			status = my_create_table(mysql, sql_mail_table);
 			
-
-					if(status == 0) {
-						res = mysql_store_result(mysql);
-						field_count = mysql_field_count(mysql);
-						printf("number of field: %u \n", field_count);
-						row_count = res->row_count;
-						printf("number of record: %d \n", row_count);
-					} else {
-						printf("query select error\n");
-					}
-					
+			// combine the sql query
+			printf("mb->content=%s\n", mb->type);
+			printf("mb->content=%s\n", mb->name);
+			printf("mb->content=%s\n", mb->content);
+			//strcat(sql_insert_mail, comma);
+			strcat(sql_insert_mail, single_quotes);
+			strcat(sql_insert_mail, mb->type);
+			strcat(sql_insert_mail, single_quotes);
+			strcat(sql_insert_mail, comma);
+			strcat(sql_insert_mail, single_quotes);
+			strcat(sql_insert_mail, mb->name);
+			strcat(sql_insert_mail, single_quotes);
+			strcat(sql_insert_mail, comma);
+			strcat(sql_insert_mail, single_quotes);
+			strcat(sql_insert_mail, mb->content);
+			strcat(sql_insert_mail, single_quotes);
+			strcat(sql_insert_mail, r_parenthese);
+			printf("sql_insert = %s\n", sql_insert_mail);	
 			
-				//	res = mysql_store_result(mysql);
-					field_count = mysql_field_count(mysql);
-					printf("Number of column :%u\n", field_count);
-					
-					printf("before get res->row_count\n");	
-					if (res == NULL)
-						printf("res if null\n");
-					row_count = res->row_count;
-					printf("after get res->row_count\n");	
-					printf("Number of row :%d\n", row_count);
-					row = mysql_fetch_row(res);
-					printf("From db content: %s\n",  row[0]);
-					printf("From db content: %s\n",  row[1]);
-					printf("From db content: %s\n",  row[2]);
-					printf("From db content: %s\n",  row[3]);
-					
-		}
+			printf("before insert\n");
+			status = my_insert_record(mysql, sql_insert_mail);
+			
+			printf("before select\n");
+			// Query the database 
+		 	//status = my_query(mysql, sql_select_table);
+		 	status = my_query(mysql, sql_query_test);
+			printf("after select\n");
 	
-		//	my_fun(buf);
+
+			if(status == 0) {
+				res = mysql_store_result(mysql);
+				field_count = mysql_field_count(mysql);
+				printf("number of field: %u \n", field_count);
+				row_count = res->row_count;
+				printf("number of record: %d \n", row_count);
+			} else {
+				printf("query select error\n");
+			}
+			
+	
+		//	res = mysql_store_result(mysql);
+			field_count = mysql_field_count(mysql);
+			printf("Number of column :%u\n", field_count);
+			
+			printf("before get res->row_count\n");	
+			if (res == NULL)
+				printf("res if null\n");
+			row_count = res->row_count;
+			printf("after get res->row_count\n");	
+			printf("Number of row :%d\n", row_count);
+			row = mysql_fetch_row(res);
+			printf("From db content: %s\n",  row[0]);
+			printf("From db content: %s\n",  row[1]);
+			printf("From db content: %s\n",  row[2]);
+			printf("From db content: %s\n",  row[3]);
+			
+
+	
+			my_fun(buf);
 			
 
 
