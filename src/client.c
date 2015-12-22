@@ -1,10 +1,6 @@
-#include <stdio.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <string.h>
+#include "network.h"
 #include "buffer.h"
+
 
 ssize_t      /* Read "n" bytes from a descriptor. */
 readn( int fd, void *vptr, size_t n)

@@ -1,33 +1,23 @@
-/*
+/* my_operation_sql.h
  * Write my own mysql function to operate the database.
  */
-#ifndef _MY_OPERATION_SQL_H
+#ifndef _MY_OPERATION_SQL_H_
+#define _MY_OPERATION_SQL_H_
 
-
-#define _MY_OPERATION_SQL_H
-
-
-
-#include <stdio.h>
-#include <stdlib.h>
 #include <mysql/mysql.h>
-#include <string.h>
 
 #define MAX_SQL_LEN 100
-#define MAX_RECORD 7
-
-
 
 struct CONN{
 	MYSQL *mysql;
-	char *host;
-	char *user;
-	char *password;
-	char *db;
-	int port;
-	char *socket_file;
-	int flags;
+	char *host;				/* host machine */
+	char *user;				/* username */
+	char *password;			/* password */
+	char *db;				/* database */
+	int port;				/* port */
+	char *socket_file;		/* socket file */
+	int flags;				/* flags */
 };
 
-#endif
+#endif /* my_operation_sql.h */
 
