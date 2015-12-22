@@ -3,13 +3,13 @@
 #define buffer_h
 
 
-
-#define MY_BUFFERSIZE 1024
+#define EINTR 9999
+#define MAX_LINE 100
 #define MAX_MAIL_LEN 1000
 
 struct buf{
-	int op; 					/* the request type from client */
-	int len;                	/* the dynamic-length allocuated buffer*/
+	int op;						/* the request type from client */
+	int len;					/* the dynamic-length allocuated buffer*/
 	char data[0];				/* the offset is equal to pointer to len buffer */
 };
 
