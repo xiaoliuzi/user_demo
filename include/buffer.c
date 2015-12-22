@@ -1,10 +1,4 @@
-
-struct buf{
-	int op;
-	int len;
-	char data[0];
-};
-
+#include "buffer.h"
 
 struct buf* init_buf(int op, int len){
 	struct buf* that = (struct buf*)malloc(sizeof(struct buf) + sizeof(char)*len);
@@ -14,4 +8,3 @@ struct buf* init_buf(int op, int len){
 	return that;
 }
 
-#define MAX_MAIL_LEN 1000
