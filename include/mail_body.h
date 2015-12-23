@@ -1,6 +1,6 @@
 /* mail_body.h */
 #ifndef _MAIL_BODY_H_
-#define  _MAIL_BODY_H_
+#define _MAIL_BODY_H_
 
 #include "buffer.h"
 

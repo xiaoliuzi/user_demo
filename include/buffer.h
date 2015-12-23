@@ -1,6 +1,6 @@
 /* buffer.h */
-#ifndef buffer_h
-#define buffer_h
+#ifndef _BUFFER_H_
+#define _BUFFER_H_
 
 
 #define EINTR 9999
