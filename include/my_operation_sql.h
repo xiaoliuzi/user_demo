@@ -14,10 +14,10 @@ struct CONN{
 	MYSQL *mysql;
 	char *host;				/* host machine */
 	char *user;				/* username */
-	char *password;			/* password */
+	char *password;				/* password */
 	char *db;				/* database */
 	int port;				/* port */
-	char *socket_file;		/* socket file */
+	char *socket_file;			/* socket file */
 	int flags;				/* flags */
 };
 
