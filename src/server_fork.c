@@ -21,12 +21,11 @@
  */
 
 
-#include "my_network.h"
+#include "network.h"
 #include "my_operation_sql.h"
-#include "my_mail.h"
-#include <mysql/mysql.h>
-#include <stdlib.h>
-#define EINTR 9999
+#include "buffer.h"
+
+
 struct mail_body{
 	char type[MAX_MAIL_LEN];
 	char name[MAX_MAIL_LEN];
@@ -126,20 +125,16 @@ struct mail_body* mail_separate(char *mail_data)
 		mailbody->type[j] = mail_data[maildata_i];
 	}
 	mailbody->type[j] = '\0';
-	printf("mail type :%s\n", mailbody->type);
-
 
 
 	for (maildata_i += 1, j=0; mail_data[maildata_i] != ' '; ++maildata_i, ++j) {
 		mailbody->name[j] = mail_data[maildata_i];
 	}
 	mailbody->name[j] = '\0';
-	printf("username :%s\n", mailbody->name);
 	for (maildata_i += 1, j=0; mail_data[maildata_i] != '\0'; ++maildata_i, ++j) {
 		mailbody->content[j] = mail_data[maildata_i];
 	}
 	mailbody->content[j] = '\0';
-	printf("mail content :%s\n", mailbody->content);
 	
 	return mailbody;
 }
@@ -263,22 +258,13 @@ int main(void)
 			n = readn(c_fd, &len_content, sizeof(len_content));
 			/* 读取username */
 			n = readn(c_fd, username, len_content);
-			//fputs(username, stdout);
-	 		printf("username is :");	
-			fputs(username, stdout);
-			printf("\n");
 	
 			/* 读取password长度 */	
 			n = readn(c_fd, &len_content, sizeof(len_content));
 			/* 读取password内容 */
 			n = readn(c_fd, password, len_content);
-			//fputs(password, stdout);
-			printf("password is :");
-			fputs(password, stdout);
-			printf("\n");
 
 			inet_ntop(AF_INET, &cin.sin_addr, addr_p, sizeof(addr_p));
-			printf("client IP is %s, port is %d\n", addr_p, ntohs(sin.sin_port));
 		
 			// combine the sql query
 			strcat(sql_select_table, single_quotes);
@@ -289,12 +275,9 @@ int main(void)
 
 			res = mysql_store_result(mysql);
 			field_count = mysql_field_count(mysql);
-			printf("Number of column :%u\n", field_count);
 		
 			row_count = res->row_count;
-			printf("Number of row :%d\n", row_count);
 			row = mysql_fetch_row(res);
-			printf("From db %s's password: %s\n", username, row[0]);
 			mysql_free_result(res);
 
 			/* process the end of \0 , as the field from db doesn't have \0 */
@@ -311,22 +294,16 @@ int main(void)
 			n = readn(c_fd, &len_content, sizeof(len_content));
 			/* 读取mail内容 */
 			n = readn(c_fd, that->data, len_content);
-			printf("content is :");
-			fputs(that->data, stdout);
-			printf("\n");
 
 
 
 
 			n = 20;
 			//buf = "\nlog in success\n";
-			printf("password identify status:%d\n", status);
 			if (status == 0) {
 				//writen(c_fd,"log OK" , n);
-				printf("client log ok\n");
  			}
 			else {
-				printf("status = %d\n", status);
 				writen(c_fd, "log failed", n);
 			}
 
@@ -346,24 +323,19 @@ int main(void)
 		///	itoa(mt, str_tmp,10);	
 //#endif 	
 			if(mt == GET_MAIL) {
-				printf("client send get mail command\n");
 						
 					// combine the sql query
 					strcat(sql_query_content, single_quotes);
 					strcat(sql_query_content, username);
 					strcat(sql_query_content, single_quotes);
 					// Query the database 
-					printf("sql_query_content=%s\n", sql_query_content);
 					status = my_query(mysql, sql_query_content);
 
 					res = mysql_store_result(mysql);
 					field_count = mysql_field_count(mysql);
-					printf("Number of column :%u\n", field_count);
 				
 					row_count = res->row_count;
-					printf("Number of row :%d\n", row_count);
 					row = mysql_fetch_row(res);
-					printf("From db %s's content: %s\n", username, row[0]);/////是否需要将username改成receiver
 
 					/* process the end of \0 , as the field from db doesn't have \0 */
 #if 0			
@@ -372,11 +344,8 @@ int main(void)
 					strcat(tmp, "\0");
 					status = strcmp(tmp,mb->content);
 #endif
-					printf("send mail is :%s\n", row[0]);
 					status = writen(c_fd, row[0], 100);//strlen(row[0])+1);
 					writen(c_fd,"test" , n);
-					printf("write mail status = %d\n", status);
-					printf("send mail success\n");
 				// release the res.	
 					mysql_free_result(res);
 					//////////////////////////////'
@@ -384,15 +353,10 @@ int main(void)
 				
 			}else if (mt == MAIL){
 
-					printf("before select\n");
 					status = my_select_db(mysql, db_name);
-					printf("before create mail table\n");
 					status = my_create_table(mysql, sql_mail_table);
 					
 					// combine the sql query
-					printf("mb->content=%s\n", mb->type);
-					printf("mb->content=%s\n", mb->name);
-					printf("mb->content=%s\n", mb->content);
 					//strcat(sql_insert_mail, comma);
 					strcat(sql_insert_mail, single_quotes);
 					strcat(sql_insert_mail, mb->type);
@@ -406,44 +370,28 @@ int main(void)
 					strcat(sql_insert_mail, mb->content);
 					strcat(sql_insert_mail, single_quotes);
 					strcat(sql_insert_mail, r_parenthese);
-					printf("sql_insert = %s\n", sql_insert_mail);	
 					
-					printf("before insert\n");
 					status = my_insert_record(mysql, sql_insert_mail);
 					
-					printf("before select\n");
 					// Query the database 
 					//status = my_query(mysql, sql_select_table);
 					status = my_query(mysql, sql_query_test);
-					printf("after select\n");
 			
 
 					if(status == 0) {
 						res = mysql_store_result(mysql);
 						field_count = mysql_field_count(mysql);
-						printf("number of field: %u \n", field_count);
 						row_count = res->row_count;
-						printf("number of record: %d \n", row_count);
 					} else {
-						printf("query select error\n");
 					}
 					
 			
 				//	res = mysql_store_result(mysql);
 					field_count = mysql_field_count(mysql);
-					printf("Number of column :%u\n", field_count);
 					
-					printf("before get res->row_count\n");	
 					if (res == NULL)
-						printf("res if null\n");
 					row_count = res->row_count;
-					printf("after get res->row_count\n");	
-					printf("Number of row :%d\n", row_count);
 					row = mysql_fetch_row(res);
-					printf("From db content: %s\n",  row[0]);
-					printf("From db content: %s\n",  row[1]);
-					printf("From db content: %s\n",  row[2]);
-					printf("From db content: %s\n",  row[3]);
 					
 		}
 	

@@ -1,5 +1,5 @@
-#include <stdio.h>
 #include "my_operation_sql.h"
+#include "network.h"
 
 
 MYSQL * my_conn_db(struct CONN conn_db)
