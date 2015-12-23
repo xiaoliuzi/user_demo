@@ -24,22 +24,10 @@
 #include "network.h"
 #include "my_operation_sql.h"
 #include "buffer.h"
+#include "mail_body.h"
 
-
-struct mail_body{
-		char type[MAX_MAIL_LEN];
-		char name[MAX_MAIL_LEN];
-		char content[MAX_MAIL_LEN];
-
-};
-
-
-/* 定义一个枚举类型来标识邮件类型 */ 
-enum mail_type{GET_MAIL, MAIL};
-
-// unp page 73
-		ssize_t                       /* Write "n" bytes to a descriptor. */
-writen(int fd, const void *vptr, size_t n)
+/* Write "n" bytes to a descriptor. */
+ssize_t writen(int fd, const void *vptr, size_t n)
 {
 		size_t nleft;
 		ssize_t nwritten;
@@ -65,10 +53,8 @@ writen(int fd, const void *vptr, size_t n)
 }
 
 
-
-//unp page 72
-		ssize_t      /* Read "n" bytes from a descriptor. */
-readn( int fd, void *vptr, size_t n)
+/* Read "n" bytes from a descriptor. */
+ssize_t readn( int fd, void *vptr, size_t n)
 {
 		size_t nleft;
 		ssize_t nread;
@@ -93,42 +79,6 @@ readn( int fd, void *vptr, size_t n)
 
 		return (n - nleft);      /* return >= 0 */
 }
-
-
-
-
-/* 分离mail体，并将mail类型，用户名，邮件内容别存入相应的邮件体成员变量中 */
-/* 可以在客户端发送之前，来将各个消息中的分隔符（比如这里maildata中的空格
- * 更换为'\0'.
- *
- */
-struct mail_body* mail_separate(char *mail_data)
-{
-		//struct buf *that = init_buf(1, MAX_MAIL_LEN);
-		int maildata_i;/* maildata 的专用索引*/
-		int j; /* 分解消息的公共索引*/
-		struct mail_body *mailbody=(struct mail_body*)malloc(sizeof(struct mail_body));
-
-		for (maildata_i=0, j=0; mail_data[maildata_i] != ' '; ++maildata_i, ++j) {
-				mailbody->type[j] = mail_data[maildata_i];
-		}
-		mailbody->type[j] = '\0';
-
-
-		for (maildata_i += 1, j=0; mail_data[maildata_i] != ' '; ++maildata_i, ++j) {
-				mailbody->name[j] = mail_data[maildata_i];
-		}
-		mailbody->name[j] = '\0';
-		for (maildata_i += 1, j=0; mail_data[maildata_i] != '\0'; ++maildata_i, ++j) {
-				mailbody->content[j] = mail_data[maildata_i];
-		}
-		mailbody->content[j] = '\0';
-
-		return mailbody;
-}
-
-
-
 
 
 int main(void)
@@ -275,9 +225,6 @@ int main(void)
 						n = readn(c_fd, &len_content, sizeof(len_content));
 						/* 读取mail内容 */
 						n = readn(c_fd, that->data, len_content);
-
-
-
 
 						n = 20;
 						//buf = "\nlog in success\n";
