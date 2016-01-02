@@ -1,6 +1,6 @@
-#include "network.h"
-#include "buffer.h"
-
+#include "../include/network.h"
+#include "../include/buffer.h"
+#include "../include/uv.h"
 
 ssize_t      /* Read "n" bytes from a descriptor. */
 readn( int fd, void *vptr, size_t n)
@@ -8,13 +8,13 @@ readn( int fd, void *vptr, size_t n)
 	size_t nleft;
 	ssize_t nread;
 	char *ptr;
-	int errno=0;
+	int read_errno=0;
 	
 	ptr = vptr;
 	nleft = n;
 	while (nleft > 0) {
 		if ( (nread = read(fd, ptr, nleft)) < 0) {
-			if ( errno == EINTR)
+			if ( read_errno == EINTR)
 				nread = 0;     /* and call read() again */
 			else
 				return (-1);
@@ -35,14 +35,14 @@ writen(int fd, const void *vptr, size_t n)
 	size_t nleft;
 	ssize_t nwritten;
 	const char *ptr;
-	int errno=0;
+	int write_errno=0;
 
 
 	ptr = vptr;
 	nleft = n;
 	while( nleft > 0) {
 		if ( (nwritten = write(fd, ptr, nleft)) <= 0) {
-			if (nwritten < 0 && errno == EINTR)
+			if (nwritten < 0 && write_errno == EINTR)
 				nwritten = 0;   /*adn call write() again */
 			else
 				return (-1);    /* error */

@@ -1,4 +1,4 @@
-#include "buffer.h"
+#include "../include/buffer.h"
 
 
 /* Initialize a buffer */
