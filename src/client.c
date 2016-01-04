@@ -2,6 +2,9 @@
 #include "../include/buffer.h"
 #include "../include/uv.h"
 
+
+uv_loop_t *loop;
+
 ssize_t      /* Read "n" bytes from a descriptor. */
 readn( int fd, void *vptr, size_t n)
 {
@@ -56,12 +59,15 @@ writen(int fd, const void *vptr, size_t n)
 }
 
 
+
+//#if 0
 int main(int argc, char *argv[])
 {
 	struct sockaddr_in sin;
 	char recv_buf[MAX_LINE];
 	char recv_mail[MAX_LINE]="0";
-	int s_fd;
+//	int s_fd;
+	
 	int port=8000;
 	char *str = NULL;
 	int n;
@@ -70,6 +76,10 @@ int main(int argc, char *argv[])
 	char username[MAX_LINE];
 	char password[MAX_LINE];
 
+	loop = uv_default_loop();
+	uv_tcp_t* socket = (uv_tcp_t*)malloc(sizeof(uv_tcp_t));
+	uv_tcp_init(loop, socket);
+	
 	printf("Input username:\n");
 	fgets(username, MAX_LINE, stdin);
 	username[strlen(username)-1] = '\0';
@@ -83,7 +93,11 @@ int main(int argc, char *argv[])
 	inet_pton(AF_INET, "127.0.0.1", &sin.sin_addr);
 	sin.sin_port = htons(port);
 	s_fd = socket(AF_INET, SOCK_STREAM, 0);
-	n = connect(s_fd, (struct sockaddr *)&sin, sizeof(sin));
+//	n = connect(s_fd, (struct sockaddr *)&sin, sizeof(sin));
+	uv_connect_t* connect = (uv_connect_t*)malloc(sizeof(uv_connect_t));
+
+	uv_ip4_addr("127.0.0.1", 7000, &sin);
+	uv_tcp_connect(connect, socket, (struct sockaddr*)&sin, on_connect);
 
 	data_len = strlen(username)+1;
    	n = writen(s_fd, &data_len, sizeof(data_len));
@@ -104,8 +118,10 @@ int main(int argc, char *argv[])
 		
 	readn(s_fd, recv_buf, MAX_LINE);
 	printf("receive mail from server:%s\n", recv_buf);
-	
-	close (s_fd);
+
+	uv_run(loop, UV_RUN_DEFAULT);
+		
 	return 0;
 
 }
+//#endif
