@@ -14,4 +14,11 @@
 #include <stdlib.h>
 #include "my_operation_sql.h"
 
+#ifndef DEFAULT_PORT
+
+#define DEFAULT_PORT 7000
+
+#endif
+
+
 #endif /* network.h */
