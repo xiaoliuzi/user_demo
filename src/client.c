@@ -88,15 +88,16 @@ int main(int argc, char *argv[])
 	fgets(password, MAX_MAIL_LEN, stdin);
 	password[strlen(password)-1] = '\0';
 	
-	bzero(&sin, sizeof(sin));
-	sin.sin_family = AF_INET;
-	inet_pton(AF_INET, "127.0.0.1", &sin.sin_addr);
-	sin.sin_port = htons(port);
-	s_fd = socket(AF_INET, SOCK_STREAM, 0);
+	//bzero(&sin, sizeof(sin));
+//	sin.sin_family = AF_INET;
+//	inet_pton(AF_INET, "127.0.0.1", &sin.sin_addr);
+//	sin.sin_port = htons(port);
+//	s_fd = socket(AF_INET, SOCK_STREAM, 0);
 //	n = connect(s_fd, (struct sockaddr *)&sin, sizeof(sin));
 	uv_connect_t* connect = (uv_connect_t*)malloc(sizeof(uv_connect_t));
 
 	uv_ip4_addr("127.0.0.1", 7000, &sin);
+	uv_tcp_bind(socket, (const struct sockaddr*)&sin, 0):
 	uv_tcp_connect(connect, socket, (struct sockaddr*)&sin, on_connect);
 
 	data_len = strlen(username)+1;
