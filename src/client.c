@@ -58,47 +58,93 @@ writen(int fd, const void *vptr, size_t n)
     return (n);
 }
 
+void input_string(char *str)
+{
+	
+	fgets(str, MAX_LINE, stdin);
+	str[strlen(str)-1] = '\0';
+	
+	return str;
+}
 
 
-//#if 0
+void alloc_buffer(uv_handle_t *handle, size_t suggested_size, uv_buf_t *buf) {
+        buf->base = (char*)malloc(suggested_size);
+        buf->len = suggested_size;
+
+}
+
+void echo_read(uv_stream_t *client, ssize_t nread, const uv_buf_t *buf) {
+     char *str = malloc(nread + 1);
+     strncpy(str, buf->base, nread);
+     str[nread] = '\0';
+     printf("%s\n", str);
+     free(str);
+     uv_stop(loop);
+}
+
+void echo_write(uv_write_t *req, int status)
+{
+        if(status) {
+                fprintf(stderr, "Write error %s\n", uv_strerror(status));
+        }
+        uv_stream_t *client = req->handle;
+        uv_read_start(client, alloc_buffer, echo_read);
+
+        free(req);
+}
+
+// call back function
+void on_connect(uv_connect_t *req, int status) {
+        if (status < 0) {
+                fprintf(stderr, "New connection error %s\n", uv_strerror(status));
+                return;
+        }
+        uv_stream_t *client = req->handle;
+        uv_write_t *reqWrite = (uv_write_t*)malloc(sizeof(uv_write_t));
+
+        char *str ="hello libuv";
+        uv_buf_t wrbuf = uv_buf_init(str, strlen(str));
+        uv_write(reqWrite, client, &wrbuf, 1, echo_write);
+
+}
+
+
+
 int main(int argc, char *argv[])
 {
-	struct sockaddr_in sin;
+	struct sockaddr_in dest;
 	char recv_buf[MAX_LINE];
 	char recv_mail[MAX_LINE]="0";
-//	int s_fd;
-	
-	int port=8000;
 	char *str = NULL;
 	int n;
 	int data_len;
+	char *username = NULL;
+	char *password = NULL;
 
-	char username[MAX_LINE];
-	char password[MAX_LINE];
+	username = (char*)malloc(MAX_LINE*sizeof(char));
+	password = (char*)malloc(MAX_LINE*sizeof(char));
 
 	loop = uv_default_loop();
 	uv_tcp_t* socket = (uv_tcp_t*)malloc(sizeof(uv_tcp_t));
+	if (socket == NULL) {
+		printf("socket malloc failed.\n");	
+	}
+
 	uv_tcp_init(loop, socket);
-	
+
 	printf("Input username:\n");
-	fgets(username, MAX_LINE, stdin);
-	username[strlen(username)-1] = '\0';
-
+	username = input_string(username);
 	printf("Input password:\n");
-	fgets(password, MAX_MAIL_LEN, stdin);
-	password[strlen(password)-1] = '\0';
+	password= input_string(password);
 	
-	//bzero(&sin, sizeof(sin));
-//	sin.sin_family = AF_INET;
-//	inet_pton(AF_INET, "127.0.0.1", &sin.sin_addr);
-//	sin.sin_port = htons(port);
-//	s_fd = socket(AF_INET, SOCK_STREAM, 0);
-//	n = connect(s_fd, (struct sockaddr *)&sin, sizeof(sin));
 	uv_connect_t* connect = (uv_connect_t*)malloc(sizeof(uv_connect_t));
+	if (connect == NULL) {
+		printf("connect malloc failed.\n");	
+	}
 
-	uv_ip4_addr("127.0.0.1", 7000, &sin);
-	uv_tcp_bind(socket, (const struct sockaddr*)&sin, 0):
-	uv_tcp_connect(connect, socket, (struct sockaddr*)&sin, on_connect);
+	uv_ip4_addr("127.0.0.1", DEFAULT_PORT, &sin);
+	uv_tcp_connect(connect, socket, (struct sockaddr*)&dest, on_connect);
 
 	data_len = strlen(username)+1;
    	n = writen(s_fd, &data_len, sizeof(data_len));
@@ -125,4 +171,3 @@ int main(int argc, char *argv[])
 	return 0;
 
 }
-//#endif
