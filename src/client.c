@@ -60,7 +60,8 @@ writen(int fd, const void *vptr, size_t n)
 
 void input_string(char *str)
 {
-	
+	// clear input buffer
+	fflush(stdin);
 	fgets(str, MAX_LINE, stdin);
 	str[strlen(str)-1] = '\0';
 	
@@ -121,9 +122,11 @@ int main(int argc, char *argv[])
 	int data_len;
 	char *username = NULL;
 	char *password = NULL;
+	char *cmd_type = NULL;
 
 	username = (char*)malloc(MAX_LINE*sizeof(char));
 	password = (char*)malloc(MAX_LINE*sizeof(char));
+	cmd_type = (char*)malloc(MAX_LINE*sizeof(char));
 
 	loop = uv_default_loop();
 	uv_tcp_t* socket = (uv_tcp_t*)malloc(sizeof(uv_tcp_t));
@@ -137,35 +140,44 @@ int main(int argc, char *argv[])
 	username = input_string(username);
 	printf("Input password:\n");
 	password= input_string(password);
+
+	printf("Input cmd_type:\n");
+	cmd_type = input_string(cmd_type);
+
+
+	switch(interpret_mail_type(cmd_type))
+	{
+		case 0:
 	
-	uv_connect_t* connect = (uv_connect_t*)malloc(sizeof(uv_connect_t));
-	if (connect == NULL) {
-		printf("connect malloc failed.\n");	
+				uv_connect_t* connect = (uv_connect_t*)malloc(sizeof(uv_connect_t));
+				if (connect == NULL) {
+					printf("connect malloc failed.\n");	
+				}
+
+				uv_ip4_addr("127.0.0.1", DEFAULT_PORT, &sin);
+				uv_tcp_connect(connect, socket, (struct sockaddr*)&dest, on_connect);
+
+				data_len = strlen(username)+1;
+			n = writen(s_fd, &data_len, sizeof(data_len));
+			n = writen(s_fd, username, strlen(username)+1);
+
+			data_len = strlen(password)+1;
+			n = writen(s_fd, &data_len, sizeof(data_len));
+			n = writen(s_fd, password, strlen(password)+1);
+			
+			struct buf *that = init_buf(1,MAX_MAIL_LEN);
+			printf("input your mail like this:mail username mailcontent\n");
+			fgets(that->data, MAX_MAIL_LEN, stdin);
+			that->data[strlen(that->data)-1] = '\0';
+			
+			data_len = strlen(that->data)+1;
+			n = writen(s_fd, &data_len, sizeof(data_len));
+			n = writen(s_fd, that->data, strlen(that->data)+1);
+				
+			readn(s_fd, recv_buf, MAX_LINE);
+			printf("receive mail from server:%s\n", recv_buf);
+	
 	}
-
-	uv_ip4_addr("127.0.0.1", DEFAULT_PORT, &sin);
-	uv_tcp_connect(connect, socket, (struct sockaddr*)&dest, on_connect);
-
-	data_len = strlen(username)+1;
-   	n = writen(s_fd, &data_len, sizeof(data_len));
-	n = writen(s_fd, username, strlen(username)+1);
-
-	data_len = strlen(password)+1;
-   	n = writen(s_fd, &data_len, sizeof(data_len));
-	n = writen(s_fd, password, strlen(password)+1);
-	
-	struct buf *that = init_buf(1,MAX_MAIL_LEN);
-	printf("input your mail like this:mail username mailcontent\n");
-	fgets(that->data, MAX_MAIL_LEN, stdin);
-	that->data[strlen(that->data)-1] = '\0';
-	
-	data_len = strlen(that->data)+1;
-    n = writen(s_fd, &data_len, sizeof(data_len));
-	n = writen(s_fd, that->data, strlen(that->data)+1);
-		
-	readn(s_fd, recv_buf, MAX_LINE);
-	printf("receive mail from server:%s\n", recv_buf);
-
 	uv_run(loop, UV_RUN_DEFAULT);
 		
 	return 0;

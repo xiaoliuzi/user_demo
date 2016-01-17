@@ -15,10 +15,10 @@
 #include "my_operation_sql.h"
 
 #ifndef DEFAULT_PORT
-
 #define DEFAULT_PORT 7000
-
 #endif
 
+
+enum mail_type{ login, logout, sendmail, recvmail};
 
 #endif /* network.h */

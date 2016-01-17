@@ -25,6 +25,7 @@
 #include "my_operation_sql.h"
 #include "buffer.h"
 #include "mail_body.h"
+#include "../include/uv.h"
 
 /* Write "n" bytes to a descriptor. */
 ssize_t writen(int fd, const void *vptr, size_t n)
