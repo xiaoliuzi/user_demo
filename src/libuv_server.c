@@ -51,12 +51,14 @@ void on_new_connection(uv_stream_t *server, int status) {
 
     uv_tcp_t *client = (uv_tcp_t*) malloc(sizeof(uv_tcp_t));
     uv_tcp_init(loop, client);
-    if (uv_accept(server, (uv_stream_t*) client) == 0) {
-        uv_read_start((uv_stream_t*) client, alloc_buffer, echo_read);
-    }
-    else {
-        uv_close((uv_handle_t*) client, NULL);
-    }
+	for(;;){
+    	if (uv_accept(server, (uv_stream_t*) client) == 0) {
+        	uv_read_start((uv_stream_t*) client, alloc_buffer, echo_read);
+    	}
+    	else {
+        	uv_close((uv_handle_t*) client, NULL);
+    	}
+	}
 }
 
 int main() {
@@ -68,11 +70,12 @@ int main() {
     uv_ip4_addr("0.0.0.0", DEFAULT_PORT, &addr);
 
     uv_tcp_bind(&server, (const struct sockaddr*)&addr, 0);
-    int r = uv_listen((uv_stream_t*) &server, DEFAULT_BACKLOG, on_new_connection);
-    if (r) {
-        fprintf(stderr, "Listen error %s\n", uv_strerror(r));
-        return 1;
-    }
+    	
+	int r = uv_listen((uv_stream_t*) &server, DEFAULT_BACKLOG, on_new_connection);
+   	if (r) {
+       	fprintf(stderr, "Listen error %s\n", uv_strerror(r));
+       	return 1;
+   	}
     return uv_run(loop, UV_RUN_DEFAULT);
 }
 
