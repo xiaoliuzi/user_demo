@@ -3,6 +3,9 @@
 #include "../include/uv.h"
 
 
+void add_action_to_queue(uv_stream_t* client, char *content, uv_write_cb on_write_cb);
+
+
 uv_loop_t *loop;
 
 ssize_t      /* Read "n" bytes from a descriptor. */
@@ -94,6 +97,14 @@ void echo_write(uv_write_t *req, int status)
 
         free(req);
 }
+
+void add_action_to_queue(uv_stream_t* client, char *content, uv_write_cb on_write_cb) {
+	uv_write_t *req_write = (uv_write_t*)malloc(sizeof(uv_write_t));
+	uv_buf_t wrbuf = uv_buf_init(content, strlen(content));
+	uv_write(req_write, client, &wrbuf, 1, on_write_cb);
+}
+
+
 
 // call back function
 void on_connect(uv_connect_t *req, int status) {
