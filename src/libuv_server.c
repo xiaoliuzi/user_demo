@@ -1,19 +1,21 @@
 #include <stdlib.h>
 #include <string.h>
 #include <uv.h>
-#define DEFAULT_PORT 7000
-#define DEFAULT_BACKLOG 128
-
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <uv.h>
+#include <msgpack.h>
+#include <mail_body.h>
+
+
 
 #define DEFAULT_PORT 7000
 #define DEFAULT_BACKLOG 128
+
 
 uv_loop_t *loop;
 struct sockaddr_in addr;
+
+
+
 
 void alloc_buffer(uv_handle_t *handle, size_t suggested_size, uv_buf_t *buf) {
     buf->base = (char*) malloc(suggested_size);
@@ -27,14 +29,44 @@ void echo_write(uv_write_t *req, int status) {
     free(req);
 }
 
+
+void lib_msgpack_process(char *str)
+{
+	
+	/* msgpack::sbuffer is a simple buffer implementation. */
+	msgpack_sbuffer sbuf;
+	msgpack_sbuffer_init(&sbuf);
+
+	/* serialize values into the buffer using msgpack_sbuffer_write callback function. */	
+	msgpack_packer pk;
+	msgpack_packer_init(&pk, &sbuf, msgpack_sbuffer_write);
+
+	
+
+	return 0;
+}
+
+
 void echo_read(uv_stream_t *client, ssize_t nread, const uv_buf_t *buf) {
     if (nread < 0) {
         if (nread != UV_EOF)
             fprintf(stderr, "Read error %s\n", uv_err_name(nread));
         uv_close((uv_handle_t*) client, NULL);
-    } else if (nread > 0) {
+    } else if (nread > 0) {1
         uv_write_t *req = (uv_write_t *) malloc(sizeof(uv_write_t));
         uv_buf_t wrbuf = uv_buf_init(buf->base, nread);
+
+		// buf->base point the string that the client had sent.
+		// such as the string "mail Alice 123456"
+		// seperate the mail to “mail" "Alice" "123456"
+		struct mail_body *mbody;
+		struct mail_body * mbody = (struct mail_body*)malloc(sizeof(struct mail_body));
+		mbody = mail_separate(buf->base);
+
+
+		// protocol process with msgpack
+		lib_msgpack_process(buf->base);
+
         uv_write(req, client, &wrbuf, 1, echo_write);
     }
 
