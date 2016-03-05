@@ -1,3 +1,6 @@
+/*
+	gcc -luv -pthread -o client echo_client.c /usr/lib/libuv.a
+*/
 #include <msgpack.h>
 #include <stdio.h>
 #include <assert.h>
