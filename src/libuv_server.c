@@ -5,8 +5,9 @@
 #include <msgpack.h>
 #include <mail_body.h>
 
-
-
+/*
+	gcc -lmsgpackc -pthread -o user_buffer_unpack user_buffer_unpack.c /usr/lib/libmsgpackc.a
+*/
 #define DEFAULT_PORT 7000
 #define DEFAULT_BACKLOG 128
 
