@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <msgpack.h>
 #include <mail_body.h>
+#include <assert.h>
 
 /*
 	gcc -lmsgpackc -pthread -o user_buffer_unpack user_buffer_unpack.c /usr/lib/libmsgpackc.a
@@ -45,6 +46,59 @@ void lib_msgpack_process(char *str)
 	
 
 	return 0;
+}
+
+void prepare(msgpack_sbuffer* sbuf) {
+	msgpack_packer pk;
+	
+	msgpack_packer_init(&pk, sbuf, msgpack_sbuffer_write);
+	
+	/* mail content */
+	/* 4mail5Alice10helloworld */
+	msgpack_pack_array(&pk, 3);
+
+	msgpack_pack_str(&pk, 4)
+	msgpack_pack_str_body(&pk, "mail", 4);
+	
+	msgpack_pack_str(&pk, 5)
+	msgpack_pack_str_body(&pk, "Alice", 5);
+
+	msgpack_pack_str(&pk, 10)
+	msgpack_pack_str_body(&pk, "helloworld", 10);
+
+}
+
+void unpack(char const* buf, size_t len) {
+
+	/* buf is allocated by client */
+	msgpack_unpacked result;
+	size_t off = 0;
+	msgpack_unpack_return ret;
+	int i = 0;
+	msgpack_unpack_init(&result);
+	ret = msgpack_unpack_next(&result, buf, len, &off);
+	while(ret == MSGPACK_UNPACK_SUCCESS) {
+		msgpack_object obj = result.data;
+	
+		/* use obj */
+		printf("Object no %d:\n", ++i);
+		msgpack_object_print(stdout, obj);
+		printf("\n");
+		
+		/* If you want to allocate something on the zone, you can use zone. */
+		/* msgpack_zone* zone = result.zone; */
+		/* The lifetime of the obj and the zone */
+		ret = msgpack_unpack_next(&result, buf, len, &off);
+		
+	}
+	msgpack_unpack_destroy(&result);
+	
+	if (ret == MSGPACK_UNPACK_CONTINUE) {
+		printf("All msgpack_object in the buffer is consumed.\n");
+	}
+	else if (ret == MSGPACK_UNPACK_PARSE_ERROR) {
+		printf("The data in the buf is invalid format.\n");
+	}
 }
 
 
