@@ -6,6 +6,14 @@ gcc -lmsgpackc -pthread -o user_buffer_unpack user_buffer_unpack.c /usr/lib/libm
 #include <stdio.h>
 #include <assert.h>
 
+void msgpack_pack_string(msgpcka_packer *pk, char *str)
+{
+
+	msgpack_pack_str(&pk, strlen(str));
+	msgpack_pack_str_body(&pk, str, strlen(str));
+
+}
+
 void prepare(msgpack_sbuffer* sbuf){
 	
 	msgpack_packer pk;
@@ -107,10 +115,11 @@ int main(void) {
 
 	msgpack_sbuffer sbuf;
 	msgpack_sbuffer_init(&sbuf);
-	
+	char *cmdstr="mail";	
 	prepare(&sbuf);
-	
+		
 	unpack(sbuf.data, sbuf.size);
+//	unpack(cmdstr, strlen("mail"));
 	printf("----------------------\n");
 
 	printf("sbuf.data is : %x\n", sbuf.data);
