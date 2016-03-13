@@ -1,5 +1,3 @@
-
-
 #include "my_network.h"
 #include "my_operation_sql.h"
 #include "my_mail.h"
@@ -68,20 +66,6 @@ ssize_t readn( int fd, void *vptr, size_t n)
 }
 
 
-
-
-void my_fun(char *p)
-{
-	if (p == NULL) {
-		return ;
-	}
-
-	for (; *p != '\0'; p++) {
-		if (*p >= 'A' && *p <= 'Z') {
-			*p = *p - 'A' + 'a';
-		}
-	}
-}
 /* 分离mail体，并将mail类型，用户名，邮件内容别存入相应的邮件体成员变量中 */
 /* 可以在客户端发送之前，来将各个消息中的分隔符（比如这里maildata中的空格
  * 更换为'\0'.
@@ -89,7 +73,6 @@ void my_fun(char *p)
  */
 struct mail_body* mail_separate(char *mail_data)
 {
-	//struct buf *that = init_buf(1, MAX_MAIL_LEN);
 	int maildata_i;/* maildata 的专用索引*/
 	int j; /* 分解消息的公共索引*/
 	struct mail_body *mailbody=(struct mail_body*)malloc(sizeof(struct mail_body));
@@ -99,8 +82,6 @@ struct mail_body* mail_separate(char *mail_data)
 	}
 	mailbody->type[j] = '\0';
 	printf("mail type :%s\n", mailbody->type);
-
-
 
 	for (maildata_i += 1, j=0; mail_data[maildata_i] != ' '; ++maildata_i, ++j) {
 		mailbody->name[j] = mail_data[maildata_i];
@@ -115,38 +96,27 @@ struct mail_body* mail_separate(char *mail_data)
 	
 	return mailbody;
 }
-
-
-
-
-
-int main(void)
+void network_init()
 {
 	struct sockaddr_in sin;
 	struct sockaddr_in cin;
-	int l_fd;
-	int c_fd;
 	socklen_t len;
-	char buf[MAX_LINE];//username from client
-	char username[MAX_LINE];//username from client
-	char password[MAX_LINE];// password from client
-	char addr_p[INET_ADDRSTRLEN];
-
 	int port = 8000;
-	int n;
-	int pid;
-	int send_len;
-	int recv_len;
 
-	MYSQL *mysql = (MYSQL*)malloc(sizeof(MYSQL));
+}
+
+
+MYSQL * my_init_mysql(MYSQL* mysql)
+{
 	MYSQL *conn = NULL;
-
-    struct CONN *conn_db = (struct CONN*)malloc(sizeof(struct CONN));
+	
+	struct CONN *conn_db = (struct CONN*)malloc(sizeof(struct CONN));
 	int status;
-    char *db_name = NULL;
-	char *table_name = NULL;
-	char *sql_uname_table = NULL;
+	char *db_name = NULL;
+	char *talbe_name = NULL;
+	char *sql_uname_talbe = NULL;
 	char *sql_mail_table = NULL;
+	
 	char *sql_insert_record[MAX_RECORD] = {
 		"insert into user_table(id, username, password) values(1, 'Jenny','123456') ",
 		"insert into user_table(id, username, password) values(2, 'Andrew','123456') ",
@@ -155,19 +125,9 @@ int main(void)
 		"insert into user_table(id, username, password) values(5, 'Emma','12345') ",
 		"insert into user_table(id, username, password) values(6, 'Alex','12345') ",
 		"insert into user_table(id, username, password) values(7, 'Adrian','123456') "
-
 	};
-    /* mailid is auto increment */
-	char sql_insert_mail[MAX_LINE] = "insert into mail_table ( mailtype, receiver, content) values( ";
-//	char *sql_insert_mail = "insert into mail_table (mailid, mailtype, receiver, content) values(2,'mail', 'xlz', 'abcdefg'); ";
-	enum mail_type mt;
-	char sql_select_table[MAX_LINE] = "select password from user_table where username =";
 	
-	char sql_query_content[MAX_LINE] = "select content from mail_table where receiver = ";
 	char *sql_query_test = "select * from mail_table";
-	char *single_quotes = "'";
-	char *comma = ",";
-	char *r_parenthese = ")";
 	MYSQL_RES *res = NULL;
 	MYSQL_ROW row = 0;
 	unsigned int field_count;
@@ -176,8 +136,7 @@ int main(void)
 	char *mail_type_ptr[] = {"getmail", "mail"};
 	char str_tmp[MAX_LINE];
 	int tmp;
-
-
+		
 	/* Initialize the MYSQL structure */
 	mysql_init(mysql);
 		
@@ -196,7 +155,6 @@ int main(void)
 
 	/* Initialize the table name */
 	sql_uname_table = "create table user_table (id int not null, username char(20), password char(16)) ";
-//	sql_mail_table = "create table mail_table (mailid int not null, sender char(20), receiver char(20), content char(MAX_MAIL_LEN),												type int,  status int, time char(100) ) ";
 /*mailtype int not null*/
 	sql_mail_table = "create table mail_table ( mailid int not null primary key auto_increment, mailtype char(50), receiver char(20), content char(100) ) ";
 
@@ -209,7 +167,33 @@ int main(void)
 		status = my_insert_record(mysql, sql_insert_record[i]);
 	}
 
-//	status = my_create_table(mysql, sql_mail_table);
+
+	return mysql;
+}
+
+int main(void)
+{
+	struct sockaddr_in sin;
+	struct sockaddr_in cin;
+	int l_fd;
+	int c_fd;
+	socklen_t len;
+	char buf[MAX_LINE];//username from client
+	char username[MAX_LINE];//username from client
+	char password[MAX_LINE];// password from client
+	struct mail_body recv_mail_body;
+
+	char addr_p[INET_ADDRSTRLEN];
+
+	int port = 8000;
+	int n;
+	int pid;
+	int send_len;
+	int recv_len;
+
+	MYSQL *mysql = (MYSQL*)malloc(sizeof(MYSQL));
+	my_init_mysql(mysql);
+
 
 /////////////////////////////////////////////////////////////////////////////////////
 
@@ -233,21 +217,13 @@ int main(void)
 
 			/* 读取username长度 */
 			n = readn(c_fd, &len_content, sizeof(len_content));
-			/* 读取username */
+			/* 读取username内容 */
 			n = readn(c_fd, username, len_content);
-			//fputs(username, stdout);
-	 		printf("username is :");	
-			fputs(username, stdout);
-			printf("\n");
 	
 			/* 读取password长度 */	
 			n = readn(c_fd, &len_content, sizeof(len_content));
 			/* 读取password内容 */
 			n = readn(c_fd, password, len_content);
-			//fputs(password, stdout);
-			printf("password is :");
-			fputs(password, stdout);
-			printf("\n");
 
 			inet_ntop(AF_INET, &cin.sin_addr, addr_p, sizeof(addr_p));
 			printf("client IP is %s, port is %d\n", addr_p, ntohs(sin.sin_port));
