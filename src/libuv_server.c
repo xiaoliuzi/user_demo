@@ -7,14 +7,83 @@
 #include <assert.h>
 
 /*
-	gcc -lmsgpackc -pthread -o user_buffer_unpack user_buffer_unpack.c /usr/lib/libmsgpackc.a
+	gcc -lmsgpackc -pthread -o server libuv_server.c /usr/lib/libmsgpackc.a
 */
 #define DEFAULT_PORT 7000
 #define DEFAULT_BACKLOG 128
 
+l
 
 uv_loop_t *loop;
 struct sockaddr_in addr;
+
+/*
+把字符串str通过msgpack打包。
+
+*/
+void msgpack_pack_string(msgpack_packer* pk, const char *str) {
+	msgpack_pack_str(pk, strlen(str));
+	msgpack_pack_str_body(pk, str, strlen(str));
+}
+
+char * catenat_sql(struct mail_body m_body){
+	char sql_insert_mail[MAX_LINE] = "INSERT INTO mail_table (mailtype, receivers, content) values(";
+	char *single_quotes = " ' ";
+	char *comma = " , ";
+	char *r_parenthese = " ) ";
+	
+
+	strcat(sql_insert_mail, single_quotes);
+	strcat(sql_insert_mail, 
+
+}
+
+void sendmail(struct mail_body m_body) {
+	
+
+}
+
+void parse_mail_body(struct mail_body m_body) {
+
+	switch( m_body.type) {
+			case 2:
+					printf(" obj type is mail\n");
+					sendmail(m_body);
+					break;
+			case 3:
+					break;
+			case 4:
+					break;
+				
+		}
+
+	ret = msgpack_unpack_net(&	
+
+}
+
+struct mail_body unpack(char * buf, size_t len) {
+	
+	msgpack_unpack_return ret;
+	msgpack_unpacked result;
+	int i = 0;
+	size_t off = 0;
+	struct mail_body m_body;
+	
+	msgpack_unpacked_init(&result);
+	ret = msgpack_unpack_next(&result, buf, len, &off);
+	m_body.type = (unsigned long)result.data.via.u64;
+	
+	ret = msgpack_unpack_next(&result, buf, len, &off);	
+	strncpy(m_body.username, result.data.via.str.ptr, result.data.via.str.size);
+
+	ret = msgpack_unpack_next(&result, buf, len, &off);	
+	strncpy(m_body.password, result.data.via.str.ptr, result.data.via.str.size);
+
+	return m_body;
+}
+
+
+
 
 
 
@@ -47,8 +116,17 @@ void lib_msgpack_process(char *str)
 
 	return 0;
 }
+void prepare(msgpack_sbuffer* sbuf, char *mail) {
+	msgpack_packer pk;
+	msgpack_packer_init(&pk, sbuf, msgpack_sbuffer_write);
+	
+	msgpack_pack_str_body(&pk, mail, strlen(mail));
+	
 
-void prepare(msgpack_sbuffer* sbuf) {
+}
+
+/* pack the mail content */
+void prepare_sbuf(msgpack_sbuffer* sbuf) {
 	msgpack_packer pk;
 	
 	msgpack_packer_init(&pk, sbuf, msgpack_sbuffer_write);
@@ -68,6 +146,8 @@ void prepare(msgpack_sbuffer* sbuf) {
 
 }
 
+
+/* unpack the mail content. */
 void unpack(char const* buf, size_t len) {
 
 	/* buf is allocated by client */
@@ -112,12 +192,15 @@ void echo_read(uv_stream_t *client, ssize_t nread, const uv_buf_t *buf) {
         uv_buf_t wrbuf = uv_buf_init(buf->base, nread);
 
 		// buf->base point the string that the client had sent.
-		// such as the string "mail Alice 123456"
-		// seperate the mail to “mail" "Alice" "123456"
-		struct mail_body *mbody;
-		struct mail_body * mbody = (struct mail_body*)malloc(sizeof(struct mail_body));
-		mbody = mail_separate(buf->base);
+		// such as the string "mail Alice helloworld"
+		// seperate the mail to :0x02A5AliceAAhelloworld"
+		
+		msgpack_sbuffer sbuf;
+		msgpack_sbuffer_init(&sbuf);
 
+//		prepare(&sbuf, buf->base);
+		
+		unpack(sbuf.data, sbuf.size);	
 
 		// protocol process with msgpack
 		lib_msgpack_process(buf->base);
@@ -129,6 +212,34 @@ void echo_read(uv_stream_t *client, ssize_t nread, const uv_buf_t *buf) {
         free(buf->base);
 }
 
+void echo_read(uv_stream_t *client, ssize_t nread, const uv_buf_t *buf,) {
+    if (nread < 0) {
+        if (nread != UV_EOF)
+            fprintf(stderr, "Read error %s\n", uv_err_name(nread));
+        uv_close((uv_handle_t*) client, NULL);
+    } else if (nread > 0) {1
+        uv_write_t *req = (uv_write_t *) malloc(sizeof(uv_write_t));
+        uv_buf_t wrbuf = uv_buf_init(buf->base, nread);
+
+		// buf->base point the string that the client had sent.
+		// such as the string "mail Alice helloworld"
+		// seperate the mail to :0x02A5AliceAAhelloworld"
+		
+		msgpack_sbuffer sbuf;
+		msgpack_sbuffer_init(&sbuf);
+		prepare(&sbuf, buf->base);
+		
+		unpack(sbuf.data, sbuf.size);	
+
+		// protocol process with msgpack
+		lib_msgpack_process(buf->base);
+
+        uv_write(req, client, &wrbuf, 1, echo_write);
+    }
+
+    if (buf->base)
+        free(buf->base);
+}
 void on_new_connection(uv_stream_t *server, int status) {
     if (status < 0) {
         fprintf(stderr, "New connection error %s\n", uv_strerror(status));
