@@ -11,6 +11,13 @@ struct mail_body{
 
 };
 
+struct symbol{
+	char *single_quotes = " ' ";
+	char *comma = " , ";
+	char *r_parenthese = " ) ";
+
+};
+
 
 /* 定义一个枚举类型来标识邮件类型 */ 
 enum mail_type{GET_MAIL, MAIL};
@@ -98,11 +105,39 @@ struct mail_body* mail_separate(char *mail_data)
 }
 void network_init()
 {
-	struct sockaddr_in sin;
-	struct sockaddr_in cin;
-	socklen_t len;
-	int port = 8000;
 
+}
+
+void query_password(MYSQL*mysql, char *str) {
+	char sql_select_table[MAX_LINE] = "select password from user_table where username = ";
+	int status;
+	struct symbol symbol_char;
+	strcat(sql_select_table, symbol_char->single_quotes);
+	strcat(sql_select_table, str);
+	strcat(sql_select_table, symbol_char->single_quotes);
+	
+	status = my_query(mysql, sql_select_table);
+	
+}
+
+void insert_mail(MYSQL *mysql, struct mail_body *mb) {
+	char sql_inser_mail[MAX_LINE] = "insert into mail_table ( mailtype, receiver, content) values(";
+	int status;
+	struct symbol symbol_char;
+	strcat(sql_insert_mail, symbol_char->single_quotes);
+	strcat(sql_insert_mail, mb->type);
+	strcat(sql_insert_mail, symbol_char->single_quotes);
+	strcat(sql_insert_mail, symbol_char->comma);
+	strcat(sql_insert_mail, symbol_char->single_quotes);
+	strcat(sql_insert_mail, mb->name);
+	strcat(sql_insert_mail, symbol_char->single_quotes);
+	strcat(sql_insert_mail, symbol_char->comma);
+	strcat(sql_insert_mail, symbol_char->single_quotes);
+	strcat(sql_insert_mail, mb->content);
+	strcat(sql_insert_mail, symbol_char->single_quotes); 
+	strcat(sql_insert_mail, symbol_char->r_parenthese);
+
+	status = my_insert_record(mysql, sql_insert_mail);	
 }
 
 
@@ -190,24 +225,23 @@ int main(void)
 	int pid;
 	int send_len;
 	int recv_len;
+	int len_content;
 
 	MYSQL *mysql = (MYSQL*)malloc(sizeof(MYSQL));
 	my_init_mysql(mysql);
 
 
-/////////////////////////////////////////////////////////////////////////////////////
-
 	bzero(&sin, sizeof(sin));
 	sin.sin_family = AF_INET;
 	sin.sin_addr.s_addr = INADDR_ANY;
 	sin.sin_port = htons(port);
-    
 
 	l_fd = socket(AF_INET, SOCK_STREAM, 0);
 	bind(l_fd, (struct sockaddr*)&sin, sizeof(sin));
 	listen(l_fd, 10);
 	printf("waiting ...\n");
-	int len_content;
+
+
 	for( ; ; ) {
 		c_fd = accept(l_fd, (struct sockaddr*)&cin, &len);
 
@@ -219,7 +253,6 @@ int main(void)
 			n = readn(c_fd, &len_content, sizeof(len_content));
 			/* 读取username内容 */
 			n = readn(c_fd, username, len_content);
-	
 			/* 读取password长度 */	
 			n = readn(c_fd, &len_content, sizeof(len_content));
 			/* 读取password内容 */
@@ -361,7 +394,6 @@ int main(void)
 					
 					printf("before select\n");
 					// Query the database 
-					//status = my_query(mysql, sql_select_table);
 					status = my_query(mysql, sql_query_test);
 					printf("after select\n");
 			
