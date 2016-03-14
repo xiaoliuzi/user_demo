@@ -26,6 +26,13 @@ struct mail_body{
 	char username[MAX_LINE];
 	char password[MAX_LINE];
 };
+
+struct symbol{
+	char *single_quotes 	= " ' ";
+	char *comma 			= " , ";
+	char *r_parenthese		= " ) ";
+};
+
 uv_loop_t *loop;
 struct sockaddr_in addr;
 
@@ -50,8 +57,24 @@ char * catenat_sql(struct mail_body m_body){
 
 }
 
-void sendmail(struct mail_body m_body) {
-	
+void insert_mail(MYSQL *mysql, struct mail_body *mb_ptr) {
+	char sql_inser_mail[MAX_LINE] = "insert into mail_table ( mailtype, receiver, content) values(";
+    int status;
+    struct symbol symbol_char;
+    strcat(sql_insert_mail, symbol_char->single_quotes);
+    strcat(sql_insert_mail, mb->type);
+    strcat(sql_insert_mail, symbol_char->single_quotes);
+    strcat(sql_insert_mail, symbol_char->comma);
+    strcat(sql_insert_mail, symbol_char->single_quotes);
+    strcat(sql_insert_mail, mb->name);
+    strcat(sql_insert_mail, symbol_char->single_quotes);
+    strcat(sql_insert_mail, symbol_char->comma);
+    strcat(sql_insert_mail, symbol_char->single_quotes);
+    strcat(sql_insert_mail, mb->content);
+    strcat(sql_insert_mail, symbol_char->single_quotes); 
+    strcat(sql_insert_mail, symbol_char->r_parenthese);
+
+    status = my_insert_record(mysql, sql_insert_mail);	
 
 }
 
@@ -66,7 +89,7 @@ void parse_mail_body(struct mail_body *mb_ptr) {
 					break;
 			case MAIL_TYPE_MAIL:
 					printf(" obj type is mail\n");
-					sendmail(m_body);
+					insert_mail(mysql,mb_ptr);
 					break;
 			case MAIL_TYPE_GETMAIL:
 					break;
