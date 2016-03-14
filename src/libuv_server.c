@@ -46,14 +46,6 @@ void msgpack_pack_string(msgpack_packer* pk, const char *str) {
 }
 
 char * catenat_sql(struct mail_body m_body){
-	char sql_insert_mail[MAX_LINE] = "INSERT INTO mail_table (mailtype, receivers, content) values(";
-	char *single_quotes = " ' ";
-	char *comma = " , ";
-	char *r_parenthese = " ) ";
-	
-
-	strcat(sql_insert_mail, single_quotes);
-	strcat(sql_insert_mail, 
 
 }
 
@@ -95,8 +87,6 @@ void parse_mail_body(struct mail_body *mb_ptr) {
 					break;
 				
 		}
-
-	ret = msgpack_unpack_net(&	
 
 }
 
