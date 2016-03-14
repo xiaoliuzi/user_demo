@@ -12,12 +12,20 @@
 #define DEFAULT_PORT 7000
 #define DEFAULT_BACKLOG 128
 
+
+enum mail_type{
+	MAIL_TYPE_LOGIN 		= 0x00,
+	MAIL_TYPE_LOGOUT 		= 0x01,
+	MAIL_TYPE_SINUP     	= 0x02,
+	MAIL_TYPE_MAIL 			= 0x03,
+	MAIL_TYPE_GET_MAIL 		= 0x04
+};
+
 struct mail_body{
-	unsigned char type;
+	enum mail_type type;
 	char username[MAX_LINE];
 	char password[MAX_LINE];
 };
-
 uv_loop_t *loop;
 struct sockaddr_in addr;
 
@@ -47,16 +55,20 @@ void sendmail(struct mail_body m_body) {
 
 }
 
-void parse_mail_body(struct mail_body m_body) {
+void parse_mail_body(struct mail_body *mb_ptr) {
 
-	switch( m_body.type) {
-			case 2:
+	switch( mb_ptr->type) {
+			case MAIL_TYPE_LOGIN:
+					break;
+			case MAIL_TYPE_LOGOUT:
+					break;
+			case MAIL_TYPE_SIGNUP:
+					break;
+			case MAIL_TYPE_MAIL:
 					printf(" obj type is mail\n");
 					sendmail(m_body);
 					break;
-			case 3:
-					break;
-			case 4:
+			case MAIL_TYPE_GETMAIL:
 					break;
 				
 		}
