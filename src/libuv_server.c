@@ -3,7 +3,7 @@
 #include <uv.h>
 #include <stdio.h>
 #include <msgpack.h>
-#include <mail_body.h>
+//#include <mail_body.h>
 #include <assert.h>
 
 /*
@@ -12,7 +12,11 @@
 #define DEFAULT_PORT 7000
 #define DEFAULT_BACKLOG 128
 
-l
+struct mail_body{
+	unsigned char type;
+	char username[MAX_LINE];
+	char password[MAX_LINE];
+};
 
 uv_loop_t *loop;
 struct sockaddr_in addr;
@@ -61,25 +65,25 @@ void parse_mail_body(struct mail_body m_body) {
 
 }
 
-struct mail_body unpack(char * buf, size_t len) {
+struct mail_body* unpack(char * buf, size_t len) {
 	
 	msgpack_unpack_return ret;
 	msgpack_unpacked result;
 	int i = 0;
 	size_t off = 0;
-	struct mail_body m_body;
+	struct mail_body *mb;
 	
 	msgpack_unpacked_init(&result);
 	ret = msgpack_unpack_next(&result, buf, len, &off);
-	m_body.type = (unsigned long)result.data.via.u64;
+	mb->type = (unsigned long)result.data.via.u64;
 	
 	ret = msgpack_unpack_next(&result, buf, len, &off);	
-	strncpy(m_body.username, result.data.via.str.ptr, result.data.via.str.size);
+	strncpy(mb->username, result.data.via.str.ptr, result.data.via.str.size);
 
 	ret = msgpack_unpack_next(&result, buf, len, &off);	
-	strncpy(m_body.password, result.data.via.str.ptr, result.data.via.str.size);
+	strncpy(mb->password, result.data.via.str.ptr, result.data.via.str.size);
 
-	return m_body;
+	return mb;
 }
 
 
