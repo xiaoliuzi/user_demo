@@ -49,8 +49,37 @@ char * catenat_sql(struct mail_body m_body){
 
 }
 
+void add_newuser(MYSQL *mysql, struct mail_body *mb_ptr) {
+	static int userid = 7;
+	userid++;
+	char sql_insert_mail[MAX_LINE] = "insert into user_table ( id, username, password) values(;
+    int status;
+    struct symbol symbol_char;
+
+	/* convert the user_id to string type */
+	char str_uid[255];
+	sprintf(str_uid, "%d", userid);
+
+    strcat(sql_insert_mail, str_uid);
+    strcat(sql_insert_mail, symbol_char->comma);
+    strcat(sql_insert_mail, symbol_char->single_quotes);
+    strcat(sql_insert_mail, mb->name);
+    strcat(sql_insert_mail, symbol_char->single_quotes);
+    strcat(sql_insert_mail, symbol_char->comma);
+    strcat(sql_insert_mail, symbol_char->single_quotes);
+    strcat(sql_insert_mail, mb->password);
+    strcat(sql_insert_mail, symbol_char->single_quotes);
+    strcat(sql_insert_mail, symbol_char->r_parenthese);
+
+    status = my_insert_record(mysql, sql_insert_mail);	
+
+}
+
+
+
+
 void insert_mail(MYSQL *mysql, struct mail_body *mb_ptr) {
-	char sql_inser_mail[MAX_LINE] = "insert into mail_table ( mailtype, receiver, content) values(";
+	char sql_insert_mail[MAX_LINE] = "insert into mail_table ( mailtype, receiver, content) values(";
     int status;
     struct symbol symbol_char;
     strcat(sql_insert_mail, symbol_char->single_quotes);
@@ -78,6 +107,8 @@ void parse_mail_body(struct mail_body *mb_ptr) {
 			case MAIL_TYPE_LOGOUT:
 					break;
 			case MAIL_TYPE_SIGNUP:
+					printf(" mailbody type is signup\n");
+					add_newuser(mysql, mb_ptr);
 					break;
 			case MAIL_TYPE_MAIL:
 					printf(" obj type is mail\n");
