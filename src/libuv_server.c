@@ -58,6 +58,8 @@ void add_newuser(MYSQL *mysql, struct mail_body *mb_ptr) {
 
 	/* convert the user_id to string type */
 	char str_uid[255];
+	char sql_to[MAX_LINE];
+	char *sql_from;
 	sprintf(str_uid, "%d", userid);
 
     strcat(sql_insert_mail, str_uid);
@@ -71,6 +73,9 @@ void add_newuser(MYSQL *mysql, struct mail_body *mb_ptr) {
     strcat(sql_insert_mail, symbol_char->single_quotes);
     strcat(sql_insert_mail, symbol_char->r_parenthese);
 
+	// prevent SQL injection attacks.
+	sql_from = sql_insert_mail;
+	mysql_real_escape_string(mysql, sql_to, sql_from, sizeof(sql_from));
     status = my_insert_record(mysql, sql_insert_mail);	
 
 }
@@ -80,6 +85,9 @@ void add_newuser(MYSQL *mysql, struct mail_body *mb_ptr) {
 
 void insert_mail(MYSQL *mysql, struct mail_body *mb_ptr) {
 	char sql_insert_mail[MAX_LINE] = "insert into mail_table ( mailtype, receiver, content) values(";
+
+	char sql_to[MAX_LINE];
+	char *sql_from;
     int status;
     struct symbol symbol_char;
     strcat(sql_insert_mail, symbol_char->single_quotes);
@@ -94,7 +102,10 @@ void insert_mail(MYSQL *mysql, struct mail_body *mb_ptr) {
     strcat(sql_insert_mail, mb->content);
     strcat(sql_insert_mail, symbol_char->single_quotes); 
     strcat(sql_insert_mail, symbol_char->r_parenthese);
-
+	
+	// prevent SQL injection attacks.
+	sql_from = sql_insert_mail;
+	mysql_real_escape_string(mysql, sql_to, sql_from, sizeof(sql_from));
     status = my_insert_record(mysql, sql_insert_mail);	
 
 }
