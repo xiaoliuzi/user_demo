@@ -76,6 +76,7 @@ void add_newuser(MYSQL *mysql, struct mail_body *mb_ptr) {
 	// prevent SQL injection attacks.
 	sql_from = sql_insert_mail;
 	mysql_real_escape_string(mysql, sql_to, sql_from, sizeof(sql_from));
+
     status = my_insert_record(mysql, sql_insert_mail);	
 
 }
@@ -106,6 +107,7 @@ void insert_mail(MYSQL *mysql, struct mail_body *mb_ptr) {
 	// prevent SQL injection attacks.
 	sql_from = sql_insert_mail;
 	mysql_real_escape_string(mysql, sql_to, sql_from, sizeof(sql_from));
+
     status = my_insert_record(mysql, sql_insert_mail);	
 
 }
@@ -142,6 +144,11 @@ struct mail_body* unpack(char * buf, size_t len) {
 	
 	msgpack_unpacked_init(&result);
 	ret = msgpack_unpack_next(&result, buf, len, &off);
+
+	// add judge the result.type whether it is the required.
+	// That is to say to identify the data type.
+	judge(result.data.via.u64);
+
 	mb->type = (unsigned long)result.data.via.u64;
 	
 	ret = msgpack_unpack_next(&result, buf, len, &off);	
