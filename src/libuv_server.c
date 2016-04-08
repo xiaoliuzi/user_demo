@@ -161,11 +161,6 @@ struct mail_body* unpack(char * buf, size_t len) {
 }
 
 
-
-
-
-
-
 void alloc_buffer(uv_handle_t *handle, size_t suggested_size, uv_buf_t *buf) {
     buf->base = (char*) malloc(suggested_size);
     buf->len = suggested_size;
@@ -190,8 +185,6 @@ void lib_msgpack_process(char *str)
 	msgpack_packer pk;
 	msgpack_packer_init(&pk, &sbuf, msgpack_sbuffer_write);
 
-	
-
 	return 0;
 }
 void prepare(msgpack_sbuffer* sbuf, char *mail) {
@@ -199,7 +192,6 @@ void prepare(msgpack_sbuffer* sbuf, char *mail) {
 	msgpack_packer_init(&pk, sbuf, msgpack_sbuffer_write);
 	
 	msgpack_pack_str_body(&pk, mail, strlen(mail));
-	
 
 }
 
