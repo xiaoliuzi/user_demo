@@ -8,9 +8,9 @@ int main(int argc, char *argv[]) {
     serverAddr.sin_addr.s_addr = inet_addr(SERVER_IP);
 
     // create listen socket
-    int listerner = socket(PF_INET, SOCK_STREAM, 0);
+    int listener = socket(PF_INET, SOCK_STREAM, 0);
     if (listener < 0) {
-        perror("listerner")
+        perror("listerner");
         exit(-1);
     }
     printf("listern socket created.\n");
@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
         exit(-1);
     }
     printf("epoll created, epollfd = %d\n", epfd);
-    static struct epoll_event evnets[EPOLL_SIZE];
+    static struct epoll_event events[EPOLL_SIZE];
     // add new event to kernel event table
     addfd(epfd, listener, true);
     // main loop
@@ -53,11 +53,8 @@ int main(int argc, char *argv[]) {
             if (sockfd == listener) {
                 struct sockaddr_in client_address;
                 socklen_t client_addrLength = sizeof(struct sockaddr_in);
-                int clinetfd = accept(listener, (struct sockaddr*)&client_address, &client_addrLength);
-                printf("client conection from: %s : % d(IP : port), clientfd = %d\n",
-                            inet_ntoa(client_address.sin_addr),
-                            ntohs(client_address.sin_port),
-                            clientfd);
+                int clientfd = accept(listener, (struct sockaddr*)&client_address, &client_addrLength);
+                printf("client conection from: %s : % d(IP : port), clientfd = %d\n", inet_ntoa(client_address.sin_addr), ntohs(client_address.sin_port), clientfd);
                 addfd(epfd, clientfd, true);
 
                 // using linklist to save the client connection in the server
@@ -67,7 +64,7 @@ int main(int argc, char *argv[]) {
 
                 // server send welcome message
                 printf("welcome message\n");
-                char message[BUFF_SIZE];
+                char message[BUF_SIZE];
                 bzero(message, BUF_SIZE);
                 sprintf(message, SERVER_WELCOME, clientfd);
                 int ret = send(clientfd, message, BUF_SIZE, 0);

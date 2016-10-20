@@ -12,6 +12,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 using namespace std;
@@ -49,7 +50,7 @@ list<int> clients_list;
  */
 
 int setnonblocking(int sockfd) {
-    fcntil(sockfd, F_SETFL, fcntl(sockfd, F_GETFD, 0) | O_NONBLOCK);
+    fcntl(sockfd, F_SETFL, fcntl(sockfd, F_GETFD, 0) | O_NONBLOCK);
     return 0;
 }
 
@@ -77,7 +78,7 @@ void addfd(int epollfd, int fd, bool enable_et) {
   * @return: len
 **/
 
-int sendBroadcastmessage(int clintfd) {
+int sendBroadcastmessage(int clientfd) {
     // buf[BUF_SIZE] receive new chat messge
     // message[BUF_SIZE] sava format message
     char buf[BUF_SIZE], message[BUF_SIZE];
@@ -89,7 +90,7 @@ int sendBroadcastmessage(int clintfd) {
     int len = recv(clientfd, buf, BUF_SIZE, 0);
     if (len == 0) {
         close(clientfd); // len == 0 means the client closed connection
-        clients_lsit.remove(clientfd); // server remove the client
+        clients_list.remove(clientfd); // server remove the client
         printf("ClientID = %d closed.\n now there are %d client in the char room.\n", clientfd, (int)clients_list.size());
     } else {
 
@@ -102,7 +103,7 @@ int sendBroadcastmessage(int clintfd) {
         list<int>::iterator it;
         for (it = clients_list.begin(); it != clients_list.end(); ++it) {
             if (*it != clientfd) {
-                if (send(*it, message, BUF_SIZE, ) < 0) {
+                if (send(*it, message, BUF_SIZE, 0) < 0) {
                     perror("error");
                     exit(-1);
                 }
